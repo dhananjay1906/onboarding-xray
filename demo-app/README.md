@@ -32,4 +32,4 @@ cd demo-app/backend
 python -m pytest
 ```
 
-In dev mode the Vite plugin `plugins/dataSource.ts` adds `data-source="path:line"` and `data-component="Name"` to every DOM element in `src/*.tsx`.
+The Vite plugin `plugins/dataSource.ts` adds `data-source="path:line"` and `data-component="Name"` to every DOM element in `src/*.tsx`, in dev and production builds. Set `VITE_XRAY_TAGS=false` to turn it off.

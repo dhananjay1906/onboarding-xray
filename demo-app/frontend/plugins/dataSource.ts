@@ -10,7 +10,7 @@ const traverse: typeof _traverse =
 
 /**
  * Adds data-source="relative/path.tsx:line" and data-component="Name" to every
- * lowercase (DOM) JSX element in src/. The X-Ray extension reads these on Alt+click.
+ * lowercase (DOM) JSX element in src/ (dev and build; disable with VITE_XRAY_TAGS=false). The X-Ray extension reads these on Alt+click.
  */
 export default function dataSource(): Plugin {
   // Vite ids use forward slashes, even on Windows.
@@ -18,7 +18,6 @@ export default function dataSource(): Plugin {
   return {
     name: "xray-data-source",
     enforce: "pre",
-    apply: "serve",
     transform(code, id) {
       const file = id.split("?")[0];
       if (!/\.tsx$/.test(file) || file.includes("node_modules")) return null;
