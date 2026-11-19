@@ -1,0 +1,756 @@
+{
+  "schema_version": 1,
+  "frontend_root": "demo-app/frontend",
+  "backend_root": "demo-app/backend",
+  "layers": [
+    "component",
+    "api_function",
+    "endpoint",
+    "handler",
+    "function",
+    "table"
+  ],
+  "components": {
+    "component:src/App.tsx#App": {
+      "id": "component:src/App.tsx#App",
+      "name": "App",
+      "file": "demo-app/frontend/src/App.tsx",
+      "source_file": "src/App.tsx",
+      "line": 9,
+      "end_line": 25,
+      "chains": []
+    },
+    "component:src/cart.tsx#CartProvider": {
+      "id": "component:src/cart.tsx#CartProvider",
+      "name": "CartProvider",
+      "file": "demo-app/frontend/src/cart.tsx",
+      "source_file": "src/cart.tsx",
+      "line": 21,
+      "end_line": 57,
+      "chains": []
+    },
+    "component:src/components/Header.tsx#Header": {
+      "id": "component:src/components/Header.tsx#Header",
+      "name": "Header",
+      "file": "demo-app/frontend/src/components/Header.tsx",
+      "source_file": "src/components/Header.tsx",
+      "line": 4,
+      "end_line": 20,
+      "chains": []
+    },
+    "component:src/components/ProductCard.tsx#ProductCard": {
+      "id": "component:src/components/ProductCard.tsx#ProductCard",
+      "name": "ProductCard",
+      "file": "demo-app/frontend/src/components/ProductCard.tsx",
+      "source_file": "src/components/ProductCard.tsx",
+      "line": 6,
+      "end_line": 20,
+      "chains": []
+    },
+    "component:src/pages/Cart.tsx#Cart": {
+      "id": "component:src/pages/Cart.tsx#Cart",
+      "name": "Cart",
+      "file": "demo-app/frontend/src/pages/Cart.tsx",
+      "source_file": "src/pages/Cart.tsx",
+      "line": 5,
+      "end_line": 57,
+      "chains": []
+    },
+    "component:src/pages/Checkout.tsx#Checkout": {
+      "id": "component:src/pages/Checkout.tsx#Checkout",
+      "name": "Checkout",
+      "file": "demo-app/frontend/src/pages/Checkout.tsx",
+      "source_file": "src/pages/Checkout.tsx",
+      "line": 7,
+      "end_line": 58,
+      "chains": [
+        "chain:src/pages/Checkout.tsx#Checkout>src/api.ts#createOrder>POST /api/orders"
+      ]
+    },
+    "component:src/pages/OrderHistory.tsx#OrderHistory": {
+      "id": "component:src/pages/OrderHistory.tsx#OrderHistory",
+      "name": "OrderHistory",
+      "file": "demo-app/frontend/src/pages/OrderHistory.tsx",
+      "source_file": "src/pages/OrderHistory.tsx",
+      "line": 5,
+      "end_line": 30,
+      "chains": [
+        "chain:src/pages/OrderHistory.tsx#OrderHistory>src/api.ts#fetchOrders>GET /api/orders"
+      ]
+    },
+    "component:src/pages/ProductDetail.tsx#ProductDetail": {
+      "id": "component:src/pages/ProductDetail.tsx#ProductDetail",
+      "name": "ProductDetail",
+      "file": "demo-app/frontend/src/pages/ProductDetail.tsx",
+      "source_file": "src/pages/ProductDetail.tsx",
+      "line": 7,
+      "end_line": 33,
+      "chains": [
+        "chain:src/pages/ProductDetail.tsx#ProductDetail>src/api.ts#fetchProduct>GET /api/products/{product_id}"
+      ]
+    },
+    "component:src/pages/ProductList.tsx#ProductList": {
+      "id": "component:src/pages/ProductList.tsx#ProductList",
+      "name": "ProductList",
+      "file": "demo-app/frontend/src/pages/ProductList.tsx",
+      "source_file": "src/pages/ProductList.tsx",
+      "line": 5,
+      "end_line": 26,
+      "chains": [
+        "chain:src/pages/ProductList.tsx#ProductList>src/api.ts#fetchProducts>GET /api/products"
+      ]
+    }
+  },
+  "chains": [
+    {
+      "id": "chain:src/pages/Checkout.tsx#Checkout>src/api.ts#createOrder>POST /api/orders",
+      "component": "component:src/pages/Checkout.tsx#Checkout",
+      "api_function": "api:src/api.ts#createOrder",
+      "endpoint": "endpoint:POST /api/orders",
+      "handler": "handler:demo-app/backend/routers/orders.py::create_order",
+      "functions": [
+        {
+          "id": "fn:demo-app/backend/services/order_service.py::place_order",
+          "depth": 1,
+          "parent": "handler:demo-app/backend/routers/orders.py::create_order"
+        }
+      ],
+      "tables": [
+        {
+          "id": "table:Order",
+          "ops": [
+            "create"
+          ],
+          "via": [
+            "fn:demo-app/backend/services/order_service.py::place_order"
+          ]
+        },
+        {
+          "id": "table:Product",
+          "ops": [
+            "get"
+          ],
+          "via": [
+            "fn:demo-app/backend/services/order_service.py::place_order"
+          ]
+        },
+        {
+          "id": "table:OrderItem",
+          "ops": [
+            "create"
+          ],
+          "via": [
+            "fn:demo-app/backend/services/order_service.py::place_order"
+          ]
+        }
+      ],
+      "untraced": [],
+      "path": [
+        "component:src/pages/Checkout.tsx#Checkout",
+        "api:src/api.ts#createOrder",
+        "endpoint:POST /api/orders",
+        "handler:demo-app/backend/routers/orders.py::create_order",
+        "fn:demo-app/backend/services/order_service.py::place_order",
+        "table:Order",
+        "table:Product",
+        "table:OrderItem"
+      ]
+    },
+    {
+      "id": "chain:src/pages/OrderHistory.tsx#OrderHistory>src/api.ts#fetchOrders>GET /api/orders",
+      "component": "component:src/pages/OrderHistory.tsx#OrderHistory",
+      "api_function": "api:src/api.ts#fetchOrders",
+      "endpoint": "endpoint:GET /api/orders",
+      "handler": "handler:demo-app/backend/routers/orders.py::list_orders",
+      "functions": [
+        {
+          "id": "fn:demo-app/backend/services/order_service.py::list_orders",
+          "depth": 1,
+          "parent": "handler:demo-app/backend/routers/orders.py::list_orders"
+        },
+        {
+          "id": "fn:demo-app/backend/services/order_service.py::get_order_items",
+          "depth": 1,
+          "parent": "handler:demo-app/backend/routers/orders.py::list_orders"
+        }
+      ],
+      "tables": [
+        {
+          "id": "table:Order",
+          "ops": [
+            "select"
+          ],
+          "via": [
+            "fn:demo-app/backend/services/order_service.py::list_orders"
+          ]
+        },
+        {
+          "id": "table:OrderItem",
+          "ops": [
+            "select"
+          ],
+          "via": [
+            "fn:demo-app/backend/services/order_service.py::get_order_items"
+          ]
+        }
+      ],
+      "untraced": [],
+      "path": [
+        "component:src/pages/OrderHistory.tsx#OrderHistory",
+        "api:src/api.ts#fetchOrders",
+        "endpoint:GET /api/orders",
+        "handler:demo-app/backend/routers/orders.py::list_orders",
+        "fn:demo-app/backend/services/order_service.py::list_orders",
+        "fn:demo-app/backend/services/order_service.py::get_order_items",
+        "table:Order",
+        "table:OrderItem"
+      ]
+    },
+    {
+      "id": "chain:src/pages/ProductDetail.tsx#ProductDetail>src/api.ts#fetchProduct>GET /api/products/{product_id}",
+      "component": "component:src/pages/ProductDetail.tsx#ProductDetail",
+      "api_function": "api:src/api.ts#fetchProduct",
+      "endpoint": "endpoint:GET /api/products/{product_id}",
+      "handler": "handler:demo-app/backend/routers/products.py::get_product",
+      "functions": [
+        {
+          "id": "fn:demo-app/backend/services/product_service.py::get_product",
+          "depth": 1,
+          "parent": "handler:demo-app/backend/routers/products.py::get_product"
+        }
+      ],
+      "tables": [
+        {
+          "id": "table:Product",
+          "ops": [
+            "get"
+          ],
+          "via": [
+            "fn:demo-app/backend/services/product_service.py::get_product"
+          ]
+        }
+      ],
+      "untraced": [],
+      "path": [
+        "component:src/pages/ProductDetail.tsx#ProductDetail",
+        "api:src/api.ts#fetchProduct",
+        "endpoint:GET /api/products/{product_id}",
+        "handler:demo-app/backend/routers/products.py::get_product",
+        "fn:demo-app/backend/services/product_service.py::get_product",
+        "table:Product"
+      ]
+    },
+    {
+      "id": "chain:src/pages/ProductList.tsx#ProductList>src/api.ts#fetchProducts>GET /api/products",
+      "component": "component:src/pages/ProductList.tsx#ProductList",
+      "api_function": "api:src/api.ts#fetchProducts",
+      "endpoint": "endpoint:GET /api/products",
+      "handler": "handler:demo-app/backend/routers/products.py::list_products",
+      "functions": [
+        {
+          "id": "fn:demo-app/backend/services/product_service.py::list_products",
+          "depth": 1,
+          "parent": "handler:demo-app/backend/routers/products.py::list_products"
+        }
+      ],
+      "tables": [
+        {
+          "id": "table:Product",
+          "ops": [
+            "select"
+          ],
+          "via": [
+            "fn:demo-app/backend/services/product_service.py::list_products"
+          ]
+        }
+      ],
+      "untraced": [],
+      "path": [
+        "component:src/pages/ProductList.tsx#ProductList",
+        "api:src/api.ts#fetchProducts",
+        "endpoint:GET /api/products",
+        "handler:demo-app/backend/routers/products.py::list_products",
+        "fn:demo-app/backend/services/product_service.py::list_products",
+        "table:Product"
+      ]
+    }
+  ],
+  "nodes": {
+    "api:src/api.ts#createOrder": {
+      "id": "api:src/api.ts#createOrder",
+      "type": "api_function",
+      "name": "createOrder",
+      "source_file": "src/api.ts",
+      "endpoints": [
+        {
+          "method": "POST",
+          "url": "/api/orders",
+          "line": 82
+        }
+      ],
+      "file": "demo-app/frontend/src/api.ts",
+      "line": 81,
+      "end_line": 87,
+      "snippet": "export function createOrder(order: NewOrder): Promise<Order> {\n  return request<Order>(\"/api/orders\", {\n    method: \"POST\",\n    headers: { \"Content-Type\": \"application/json\" },\n    body: JSON.stringify(order),\n  });\n}"
+    },
+    "api:src/api.ts#fetchOrders": {
+      "id": "api:src/api.ts#fetchOrders",
+      "type": "api_function",
+      "name": "fetchOrders",
+      "source_file": "src/api.ts",
+      "endpoints": [
+        {
+          "method": "GET",
+          "url": "/api/orders",
+          "line": 90
+        }
+      ],
+      "file": "demo-app/frontend/src/api.ts",
+      "line": 89,
+      "end_line": 91,
+      "snippet": "export function fetchOrders(): Promise<Order[]> {\n  return request<Order[]>(\"/api/orders\");\n}"
+    },
+    "api:src/api.ts#fetchProduct": {
+      "id": "api:src/api.ts#fetchProduct",
+      "type": "api_function",
+      "name": "fetchProduct",
+      "source_file": "src/api.ts",
+      "endpoints": [
+        {
+          "method": "GET",
+          "url": "/api/products/{param}",
+          "line": 78
+        }
+      ],
+      "file": "demo-app/frontend/src/api.ts",
+      "line": 77,
+      "end_line": 79,
+      "snippet": "export function fetchProduct(id: number): Promise<Product> {\n  return request<Product>(`/api/products/${id}`);\n}"
+    },
+    "api:src/api.ts#fetchProducts": {
+      "id": "api:src/api.ts#fetchProducts",
+      "type": "api_function",
+      "name": "fetchProducts",
+      "source_file": "src/api.ts",
+      "endpoints": [
+        {
+          "method": "GET",
+          "url": "/api/products",
+          "line": 74
+        }
+      ],
+      "file": "demo-app/frontend/src/api.ts",
+      "line": 73,
+      "end_line": 75,
+      "snippet": "export function fetchProducts(): Promise<Product[]> {\n  return request<Product[]>(\"/api/products\");\n}"
+    },
+    "component:src/App.tsx#App": {
+      "id": "component:src/App.tsx#App",
+      "type": "component",
+      "name": "App",
+      "source_file": "src/App.tsx",
+      "file": "demo-app/frontend/src/App.tsx",
+      "line": 9,
+      "end_line": 25,
+      "snippet": "export default function App() {\n  return (\n    <>\n      <Header />\n      <main className=\"container\">\n        <Routes>\n          <Route path=\"/\" element={<ProductList />} />\n          <Route path=\"/products/:id\" element={<ProductDetail />} />\n          <Route path=\"/cart\" element={<Cart />} />\n          <Route path=\"/checkout\" element={<Checkout />} />\n          <Route path=\"/orders\" element={<OrderHistory />} />\n          <Route path=\"*\" element={<p>Page not found.</p>} />\n        </Routes>\n      </main>\n    </>\n  );\n}"
+    },
+    "component:src/cart.tsx#CartProvider": {
+      "id": "component:src/cart.tsx#CartProvider",
+      "type": "component",
+      "name": "CartProvider",
+      "source_file": "src/cart.tsx",
+      "file": "demo-app/frontend/src/cart.tsx",
+      "line": 21,
+      "end_line": 57,
+      "snippet": "export function CartProvider({ children }: { children: ReactNode }) {\n  const [lines, setLines] = useState<CartLine[]>(() => {\n    try {\n      return JSON.parse(localStorage.getItem(\"cart\") ?? \"[]\");\n    } catch {\n      return [];\n    }\n  });\n\n  useEffect(() => {\n    localStorage.setItem(\"cart\", JSON.stringify(lines));\n  }, [lines]);\n\n  const value: CartValue = {\n    lines,\n    count: lines.reduce((n, l) => n + l.quantity, 0),\n    totalCents: lines.reduce((n, l) => n + l.quantity * l.product.price_cents, 0),\n    add: (product) =>\n      setLines((prev) => {\n        const existing = prev.find((l) => l.product.id === product.id);\n        if (existing) {\n          return prev.map((l) => (l.product.id === product.id ? { ...l, quantity: l.quantity + 1 } : l));\n        }\n        return [...prev, { product, quantity: 1 }];\n      }),\n    setQuantity: (productId, quantity) =>\n      setLines((prev) =>\n        quantity < 1\n          ? prev.filter((l) => l.product.id !== productId)\n          : prev.map((l) => (l.product.id === productId ? { ...l, quantity } : l)),\n      ),\n    remove: (productId) => setLines((prev) => prev.filter((l) => l.product.id !== productId)),\n    clear: () => setLines([]),\n  };\n\n  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;\n}"
+    },
+    "component:src/components/Header.tsx#Header": {
+      "id": "component:src/components/Header.tsx#Header",
+      "type": "component",
+      "name": "Header",
+      "source_file": "src/components/Header.tsx",
+      "file": "demo-app/frontend/src/components/Header.tsx",
+      "line": 4,
+      "end_line": 20,
+      "snippet": "export default function Header() {\n  const { count } = useCart();\n  return (\n    <header className=\"header\">\n      <Link to=\"/\" className=\"logo\">\n        🛍️ Demo Store\n      </Link>\n      <nav>\n        <Link to=\"/\">Products</Link>\n        <Link to=\"/orders\">Orders</Link>\n        <Link to=\"/cart\" className=\"cart-link\">\n          Cart ({count})\n        </Link>\n      </nav>\n    </header>\n  );\n}"
+    },
+    "component:src/components/ProductCard.tsx#ProductCard": {
+      "id": "component:src/components/ProductCard.tsx#ProductCard",
+      "type": "component",
+      "name": "ProductCard",
+      "source_file": "src/components/ProductCard.tsx",
+      "file": "demo-app/frontend/src/components/ProductCard.tsx",
+      "line": 6,
+      "end_line": 20,
+      "snippet": "export default function ProductCard({ product }: { product: Product }) {\n  const { add } = useCart();\n  return (\n    <article className=\"card\">\n      <Link to={`/products/${product.id}`} className=\"card-link\">\n        <div className=\"emoji\">{product.image_emoji}</div>\n        <h3>{product.name}</h3>\n      </Link>\n      <p className=\"price\">{formatPrice(product.price_cents)}</p>\n      <button className=\"btn\" onClick={() => add(product)}>\n        Add to cart\n      </button>\n    </article>\n  );\n}"
+    },
+    "component:src/pages/Cart.tsx#Cart": {
+      "id": "component:src/pages/Cart.tsx#Cart",
+      "type": "component",
+      "name": "Cart",
+      "source_file": "src/pages/Cart.tsx",
+      "file": "demo-app/frontend/src/pages/Cart.tsx",
+      "line": 5,
+      "end_line": 57,
+      "snippet": "export default function Cart() {\n  const { lines, totalCents, setQuantity, remove, clear } = useCart();\n  const navigate = useNavigate();\n\n  if (lines.length === 0) {\n    return (\n      <section>\n        <h1>Your cart</h1>\n        <p>Your cart is empty.</p>\n        <Link to=\"/\">Browse products</Link>\n      </section>\n    );\n  }\n\n  return (\n    <section>\n      <h1>Your cart</h1>\n      <table className=\"table\">\n        <tbody>\n          {lines.map(({ product, quantity }) => (\n            <tr key={product.id}>\n              <td>\n                {product.image_emoji} {product.name}\n              </td>\n              <td>\n                <button className=\"btn small\" onClick={() => setQuantity(product.id, quantity - 1)}>\n                  −\n                </button>{\" \"}\n                {quantity}{\" \"}\n                <button className=\"btn small\" onClick={() => setQuantity(product.id, quantity + 1)}>\n                  +\n                </button>\n              </td>\n              <td>{formatPrice(product.price_cents * quantity)}</td>\n              <td>\n                <button className=\"btn small ghost\" onClick={() => remove(product.id)}>\n                  Remove\n                </button>\n              </td>\n            </tr>\n          ))}\n        </tbody>\n      </table>\n      <p className=\"total\">Total: {formatPrice(totalCents)}</p>\n      <button className=\"btn ghost\" onClick={clear}>\n        Clear cart\n      </button>{\" \"}\n      <button className=\"btn\" onClick={() => navigate(\"/checkout\")}>\n        Go to checkout\n      </button>\n    </section>\n  );\n}"
+    },
+    "component:src/pages/Checkout.tsx#Checkout": {
+      "id": "component:src/pages/Checkout.tsx#Checkout",
+      "type": "component",
+      "name": "Checkout",
+      "source_file": "src/pages/Checkout.tsx",
+      "file": "demo-app/frontend/src/pages/Checkout.tsx",
+      "line": 7,
+      "end_line": 58,
+      "snippet": "export default function Checkout() {\n  const { lines, totalCents, clear } = useCart();\n  const navigate = useNavigate();\n  const [name, setName] = useState(\"\");\n  const [submitting, setSubmitting] = useState(false);\n  const [error, setError] = useState<string | null>(null);\n\n  async function handleSubmit(e: FormEvent) {\n    e.preventDefault();\n    setSubmitting(true);\n    setError(null);\n    try {\n      await createOrder({\n        customer_name: name,\n        items: lines.map((l) => ({ product_id: l.product.id, quantity: l.quantity })),\n      });\n      clear();\n      navigate(\"/orders\");\n    } catch (err) {\n      setError((err as Error).message);\n    } finally {\n      setSubmitting(false);\n    }\n  }\n\n  if (lines.length === 0) {\n    return (\n      <section>\n        <h1>Checkout</h1>\n        <p>Nothing to check out.</p>\n        <Link to=\"/\">Browse products</Link>\n      </section>\n    );\n  }\n\n  return (\n    <section>\n      <h1>Checkout</h1>\n      <p className=\"total\">Order total: {formatPrice(totalCents)}</p>\n      <form onSubmit={handleSubmit} className=\"form\">\n        <label>\n          Name\n          <input value={name} onChange={(e) => setName(e.target.value)} required />\n        </label>\n        {error && <p className=\"error\">{error}</p>}\n        <button className=\"btn\" type=\"submit\" disabled={submitting}>\n          {submitting ? \"Placing order…\" : \"Place order\"}\n        </button>\n      </form>\n    </section>\n  );\n}"
+    },
+    "component:src/pages/OrderHistory.tsx#OrderHistory": {
+      "id": "component:src/pages/OrderHistory.tsx#OrderHistory",
+      "type": "component",
+      "name": "OrderHistory",
+      "source_file": "src/pages/OrderHistory.tsx",
+      "file": "demo-app/frontend/src/pages/OrderHistory.tsx",
+      "line": 5,
+      "end_line": 30,
+      "snippet": "export default function OrderHistory() {\n  const [orders, setOrders] = useState<Order[] | null>(null);\n  const [error, setError] = useState<string | null>(null);\n\n  useEffect(() => {\n    fetchOrders().then(setOrders).catch((e: Error) => setError(e.message));\n  }, []);\n\n  if (error) return <p className=\"error\">Could not load orders: {error}</p>;\n  if (!orders) return <p>Loading orders…</p>;\n\n  return (\n    <section>\n      <h1>Order history</h1>\n      {orders.length === 0 && <p>No orders yet.</p>}\n      {orders.map((o) => (\n        <div key={o.id} className=\"order\">\n          <strong>Order #{o.id}</strong> · {new Date(o.created_at).toLocaleString()} · {o.customer_name}\n          <div>\n            {o.items?.length ?? 0} line(s) · {formatPrice(o.total_cents)}\n          </div>\n        </div>\n      ))}\n    </section>\n  );\n}"
+    },
+    "component:src/pages/ProductDetail.tsx#ProductDetail": {
+      "id": "component:src/pages/ProductDetail.tsx#ProductDetail",
+      "type": "component",
+      "name": "ProductDetail",
+      "source_file": "src/pages/ProductDetail.tsx",
+      "file": "demo-app/frontend/src/pages/ProductDetail.tsx",
+      "line": 7,
+      "end_line": 33,
+      "snippet": "export default function ProductDetail() {\n  const { id } = useParams();\n  const { add } = useCart();\n  const [product, setProduct] = useState<Product | null>(null);\n  const [error, setError] = useState<string | null>(null);\n\n  useEffect(() => {\n    fetchProduct(Number(id)).then(setProduct).catch((e: Error) => setError(e.message));\n  }, [id]);\n\n  if (error) return <p className=\"error\">{error}</p>;\n  if (!product) return <p>Loading…</p>;\n\n  return (\n    <section className=\"detail\">\n      <Link to=\"/\">← Back to products</Link>\n      <div className=\"emoji big\">{product.image_emoji}</div>\n      <h1>{product.name}</h1>\n      <p>{product.description}</p>\n      <p className=\"price\">{formatPrice(product.price_cents)}</p>\n      <p className=\"muted\">{product.stock} in stock</p>\n      <button className=\"btn\" onClick={() => add(product)} disabled={product.stock < 1}>\n        Add to cart\n      </button>\n    </section>\n  );\n}"
+    },
+    "component:src/pages/ProductList.tsx#ProductList": {
+      "id": "component:src/pages/ProductList.tsx#ProductList",
+      "type": "component",
+      "name": "ProductList",
+      "source_file": "src/pages/ProductList.tsx",
+      "file": "demo-app/frontend/src/pages/ProductList.tsx",
+      "line": 5,
+      "end_line": 26,
+      "snippet": "export default function ProductList() {\n  const [products, setProducts] = useState<Product[] | null>(null);\n  const [error, setError] = useState<string | null>(null);\n\n  useEffect(() => {\n    fetchProducts().then(setProducts).catch((e: Error) => setError(e.message));\n  }, []);\n\n  if (error) return <p className=\"error\">Could not load products: {error}</p>;\n  if (!products) return <p>Loading products…</p>;\n\n  return (\n    <section>\n      <h1>Products</h1>\n      <div className=\"grid\">\n        {products.map((p) => (\n          <ProductCard key={p.id} product={p} />\n        ))}\n      </div>\n    </section>\n  );\n}"
+    },
+    "endpoint:GET /api/orders": {
+      "id": "endpoint:GET /api/orders",
+      "type": "endpoint",
+      "name": "GET /api/orders",
+      "method": "GET",
+      "path": "/api/orders",
+      "file": "demo-app/backend/routers/orders.py",
+      "line": 46,
+      "end_line": 46,
+      "snippet": "@router.get(\"\")"
+    },
+    "endpoint:GET /api/products": {
+      "id": "endpoint:GET /api/products",
+      "type": "endpoint",
+      "name": "GET /api/products",
+      "method": "GET",
+      "path": "/api/products",
+      "file": "demo-app/backend/routers/products.py",
+      "line": 10,
+      "end_line": 10,
+      "snippet": "@router.get(\"\")"
+    },
+    "endpoint:GET /api/products/{product_id}": {
+      "id": "endpoint:GET /api/products/{product_id}",
+      "type": "endpoint",
+      "name": "GET /api/products/{product_id}",
+      "method": "GET",
+      "path": "/api/products/{product_id}",
+      "file": "demo-app/backend/routers/products.py",
+      "line": 15,
+      "end_line": 15,
+      "snippet": "@router.get(\"/{product_id}\")"
+    },
+    "endpoint:POST /api/orders": {
+      "id": "endpoint:POST /api/orders",
+      "type": "endpoint",
+      "name": "POST /api/orders",
+      "method": "POST",
+      "path": "/api/orders",
+      "file": "demo-app/backend/routers/orders.py",
+      "line": 28,
+      "end_line": 28,
+      "snippet": "@router.post(\"\", status_code=201)"
+    },
+    "fn:demo-app/backend/services/order_service.py::get_order_items": {
+      "id": "fn:demo-app/backend/services/order_service.py::get_order_items",
+      "type": "function",
+      "name": "get_order_items",
+      "depth": 1,
+      "file": "demo-app/backend/services/order_service.py",
+      "line": 57,
+      "end_line": 58,
+      "snippet": "def get_order_items(session: Session, order_id: int) -> list[OrderItem]:\n    return list(session.exec(select(OrderItem).where(OrderItem.order_id == order_id)).all())"
+    },
+    "fn:demo-app/backend/services/order_service.py::list_orders": {
+      "id": "fn:demo-app/backend/services/order_service.py::list_orders",
+      "type": "function",
+      "name": "list_orders",
+      "depth": 1,
+      "file": "demo-app/backend/services/order_service.py",
+      "line": 52,
+      "end_line": 54,
+      "snippet": "def list_orders(session: Session, session_id: str) -> list[Order]:\n    statement = select(Order).where(Order.session_id == session_id).order_by(Order.id.desc())\n    return list(session.exec(statement).all())"
+    },
+    "fn:demo-app/backend/services/order_service.py::place_order": {
+      "id": "fn:demo-app/backend/services/order_service.py::place_order",
+      "type": "function",
+      "name": "place_order",
+      "depth": 1,
+      "file": "demo-app/backend/services/order_service.py",
+      "line": 10,
+      "end_line": 49,
+      "snippet": "def place_order(\n    session: Session,\n    session_id: str,\n    customer_name: str,\n    items: list[tuple[int, int]],\n) -> Order:\n    \"\"\"Create an Order and its OrderItems. items = [(product_id, quantity)].\"\"\"\n    if not items:\n        raise OrderError(\"Cart is empty\")\n\n    order = Order(session_id=session_id, customer_name=customer_name, total_cents=0)\n    session.add(order)\n    session.flush()  # assigns order.id\n\n    total = 0\n    for product_id, quantity in items:\n        product = session.get(Product, product_id)\n        if product is None:\n            session.rollback()\n            raise OrderError(f\"Product {product_id} not found\")\n        if quantity < 1 or quantity > product.stock:\n            session.rollback()\n            raise OrderError(f\"Invalid quantity for {product.name}\")\n        product.stock -= quantity\n        session.add(product)\n        session.add(\n            OrderItem(\n                order_id=order.id,\n                product_id=product.id,\n                quantity=quantity,\n                unit_price_cents=product.price_cents,\n            )\n        )\n        total += product.price_cents * quantity\n\n    order.total_cents = total\n    session.add(order)\n    session.commit()\n    session.refresh(order)\n    return order"
+    },
+    "fn:demo-app/backend/services/product_service.py::get_product": {
+      "id": "fn:demo-app/backend/services/product_service.py::get_product",
+      "type": "function",
+      "name": "get_product",
+      "depth": 1,
+      "file": "demo-app/backend/services/product_service.py",
+      "line": 12,
+      "end_line": 13,
+      "snippet": "def get_product(session: Session, product_id: int) -> Optional[Product]:\n    return session.get(Product, product_id)"
+    },
+    "fn:demo-app/backend/services/product_service.py::list_products": {
+      "id": "fn:demo-app/backend/services/product_service.py::list_products",
+      "type": "function",
+      "name": "list_products",
+      "depth": 1,
+      "file": "demo-app/backend/services/product_service.py",
+      "line": 8,
+      "end_line": 9,
+      "snippet": "def list_products(session: Session) -> list[Product]:\n    return list(session.exec(select(Product)).all())"
+    },
+    "handler:demo-app/backend/routers/orders.py::create_order": {
+      "id": "handler:demo-app/backend/routers/orders.py::create_order",
+      "type": "handler",
+      "name": "create_order",
+      "depth": 0,
+      "file": "demo-app/backend/routers/orders.py",
+      "line": 29,
+      "end_line": 43,
+      "snippet": "def create_order(\n    payload: OrderCreate,\n    session: Session = Depends(get_session),\n    session_id: str = Depends(require_session_id),\n):\n    try:\n        order = order_service.place_order(\n            session,\n            session_id,\n            payload.customer_name,\n            [(line.product_id, line.quantity) for line in payload.items],\n        )\n    except order_service.OrderError as exc:\n        raise HTTPException(status_code=400, detail=str(exc))\n    return order"
+    },
+    "handler:demo-app/backend/routers/orders.py::list_orders": {
+      "id": "handler:demo-app/backend/routers/orders.py::list_orders",
+      "type": "handler",
+      "name": "list_orders",
+      "depth": 0,
+      "file": "demo-app/backend/routers/orders.py",
+      "line": 47,
+      "end_line": 55,
+      "snippet": "def list_orders(\n    session: Session = Depends(get_session),\n    session_id: str = Depends(require_session_id),\n):\n    orders = order_service.list_orders(session, session_id)\n    return [\n        {**order.model_dump(), \"items\": order_service.get_order_items(session, order.id)}\n        for order in orders\n    ]"
+    },
+    "handler:demo-app/backend/routers/products.py::get_product": {
+      "id": "handler:demo-app/backend/routers/products.py::get_product",
+      "type": "handler",
+      "name": "get_product",
+      "depth": 0,
+      "file": "demo-app/backend/routers/products.py",
+      "line": 16,
+      "end_line": 20,
+      "snippet": "def get_product(product_id: int, session: Session = Depends(get_session)):\n    product = product_service.get_product(session, product_id)\n    if product is None:\n        raise HTTPException(status_code=404, detail=\"Product not found\")\n    return product"
+    },
+    "handler:demo-app/backend/routers/products.py::list_products": {
+      "id": "handler:demo-app/backend/routers/products.py::list_products",
+      "type": "handler",
+      "name": "list_products",
+      "depth": 0,
+      "file": "demo-app/backend/routers/products.py",
+      "line": 11,
+      "end_line": 12,
+      "snippet": "def list_products(session: Session = Depends(get_session)):\n    return product_service.list_products(session)"
+    },
+    "table:Order": {
+      "id": "table:Order",
+      "type": "table",
+      "name": "Order",
+      "table_name": "order",
+      "file": "demo-app/backend/models/order.py",
+      "line": 7,
+      "end_line": 12,
+      "snippet": "class Order(SQLModel, table=True):\n    id: Optional[int] = Field(default=None, primary_key=True)\n    session_id: str = Field(index=True)\n    customer_name: str\n    total_cents: int\n    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))"
+    },
+    "table:OrderItem": {
+      "id": "table:OrderItem",
+      "type": "table",
+      "name": "OrderItem",
+      "table_name": "orderitem",
+      "file": "demo-app/backend/models/order.py",
+      "line": 15,
+      "end_line": 20,
+      "snippet": "class OrderItem(SQLModel, table=True):\n    id: Optional[int] = Field(default=None, primary_key=True)\n    order_id: int = Field(foreign_key=\"order.id\")\n    product_id: int = Field(foreign_key=\"product.id\")\n    quantity: int\n    unit_price_cents: int"
+    },
+    "table:Product": {
+      "id": "table:Product",
+      "type": "table",
+      "name": "Product",
+      "table_name": "product",
+      "file": "demo-app/backend/models/product.py",
+      "line": 6,
+      "end_line": 12,
+      "snippet": "class Product(SQLModel, table=True):\n    id: Optional[int] = Field(default=None, primary_key=True)\n    name: str\n    description: str = \"\"\n    price_cents: int\n    image_emoji: str = \"📦\"\n    stock: int = 100"
+    }
+  },
+  "edges": [
+    {
+      "from": "endpoint:POST /api/orders",
+      "to": "handler:demo-app/backend/routers/orders.py::create_order",
+      "kind": "routes_to"
+    },
+    {
+      "from": "handler:demo-app/backend/routers/orders.py::create_order",
+      "to": "fn:demo-app/backend/services/order_service.py::place_order",
+      "kind": "calls",
+      "line": 35
+    },
+    {
+      "from": "fn:demo-app/backend/services/order_service.py::place_order",
+      "to": "table:Order",
+      "kind": "touches",
+      "op": "create",
+      "line": 20
+    },
+    {
+      "from": "fn:demo-app/backend/services/order_service.py::place_order",
+      "to": "table:Product",
+      "kind": "touches",
+      "op": "get",
+      "line": 26
+    },
+    {
+      "from": "fn:demo-app/backend/services/order_service.py::place_order",
+      "to": "table:OrderItem",
+      "kind": "touches",
+      "op": "create",
+      "line": 36
+    },
+    {
+      "from": "component:src/pages/Checkout.tsx#Checkout",
+      "to": "api:src/api.ts#createOrder",
+      "kind": "calls_api",
+      "line": 19
+    },
+    {
+      "from": "api:src/api.ts#createOrder",
+      "to": "endpoint:POST /api/orders",
+      "kind": "requests",
+      "line": 82
+    },
+    {
+      "from": "endpoint:GET /api/orders",
+      "to": "handler:demo-app/backend/routers/orders.py::list_orders",
+      "kind": "routes_to"
+    },
+    {
+      "from": "handler:demo-app/backend/routers/orders.py::list_orders",
+      "to": "fn:demo-app/backend/services/order_service.py::list_orders",
+      "kind": "calls",
+      "line": 51
+    },
+    {
+      "from": "handler:demo-app/backend/routers/orders.py::list_orders",
+      "to": "fn:demo-app/backend/services/order_service.py::get_order_items",
+      "kind": "calls",
+      "line": 53
+    },
+    {
+      "from": "fn:demo-app/backend/services/order_service.py::list_orders",
+      "to": "table:Order",
+      "kind": "touches",
+      "op": "select",
+      "line": 53
+    },
+    {
+      "from": "fn:demo-app/backend/services/order_service.py::get_order_items",
+      "to": "table:OrderItem",
+      "kind": "touches",
+      "op": "select",
+      "line": 58
+    },
+    {
+      "from": "component:src/pages/OrderHistory.tsx#OrderHistory",
+      "to": "api:src/api.ts#fetchOrders",
+      "kind": "calls_api",
+      "line": 10
+    },
+    {
+      "from": "api:src/api.ts#fetchOrders",
+      "to": "endpoint:GET /api/orders",
+      "kind": "requests",
+      "line": 90
+    },
+    {
+      "from": "endpoint:GET /api/products/{product_id}",
+      "to": "handler:demo-app/backend/routers/products.py::get_product",
+      "kind": "routes_to"
+    },
+    {
+      "from": "handler:demo-app/backend/routers/products.py::get_product",
+      "to": "fn:demo-app/backend/services/product_service.py::get_product",
+      "kind": "calls",
+      "line": 17
+    },
+    {
+      "from": "fn:demo-app/backend/services/product_service.py::get_product",
+      "to": "table:Product",
+      "kind": "touches",
+      "op": "get",
+      "line": 13
+    },
+    {
+      "from": "component:src/pages/ProductDetail.tsx#ProductDetail",
+      "to": "api:src/api.ts#fetchProduct",
+      "kind": "calls_api",
+      "line": 14
+    },
+    {
+      "from": "api:src/api.ts#fetchProduct",
+      "to": "endpoint:GET /api/products/{product_id}",
+      "kind": "requests",
+      "line": 78
+    },
+    {
+      "from": "endpoint:GET /api/products",
+      "to": "handler:demo-app/backend/routers/products.py::list_products",
+      "kind": "routes_to"
+    },
+    {
+      "from": "handler:demo-app/backend/routers/products.py::list_products",
+      "to": "fn:demo-app/backend/services/product_service.py::list_products",
+      "kind": "calls",
+      "line": 12
+    },
+    {
+      "from": "fn:demo-app/backend/services/product_service.py::list_products",
+      "to": "table:Product",
+      "kind": "touches",
+      "op": "select",
+      "line": 9
+    },
+    {
+      "from": "component:src/pages/ProductList.tsx#ProductList",
+      "to": "api:src/api.ts#fetchProducts",
+      "kind": "calls_api",
+      "line": 10
+    },
+    {
+      "from": "api:src/api.ts#fetchProducts",
+      "to": "endpoint:GET /api/products",
+      "kind": "requests",
+      "line": 74
+    }
+  ],
+  "unmatched": {
+    "frontend_calls": [],
+    "routes_without_frontend": [],
+    "api_functions_without_component": []
+  }
+}

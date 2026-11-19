@@ -233,3 +233,6 @@ graph.json
 *.local
 extension/dist/
 *.zip
+analyzer/out/
+# The bundled demo graph is committed (the generic graph.json rule above ignores other copies).
+!extension/public/graph.json
