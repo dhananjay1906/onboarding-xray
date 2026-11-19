@@ -228,3 +228,8 @@ dist/
 *.db
 graph.json
 .cache/
+
+.firebase/
+*.local
+extension/dist/
+*.zip
