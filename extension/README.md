@@ -1,0 +1,44 @@
+# Onboarding X-Ray extension
+
+Chrome extension (Manifest V3): service worker, content script, side panel and welcome page. Vite + TypeScript + React + Tailwind.
+
+## Build
+
+```
+cd extension
+npm install
+npm run build
+```
+
+Output goes to `extension/dist/`. After changing the demo app, run `npm run analyze` at the repo root first: it refreshes `public/graph.json`, which the build bundles.
+
+## Load unpacked in Chrome (139+)
+
+1. Open `chrome://extensions`.
+2. Turn on **Developer mode** (top right).
+3. Click **Load unpacked** and select the `extension/dist` folder.
+4. A welcome tab opens on install. Pin the extension (puzzle icon, then the pin).
+5. Click the Onboarding X-Ray toolbar icon to open the side panel.
+
+After a rebuild, click the reload icon on the extension's card in `chrome://extensions`.
+
+## Try it
+
+1. Start the demo store (see `demo-app/README.md`) and open http://localhost:5173.
+2. Open the side panel, then Alt+click any element in the demo store. The side panel selects the matching component.
+3. Or pick a component from the dropdown to see its chain.
+
+The content script currently runs only on `http://localhost:5173/*` and `http://127.0.0.1:5173/*`.
+
+## Layout
+
+| Path | Purpose |
+|---|---|
+| `manifest.json` | MV3 manifest, copied into `dist/` |
+| `src/background/` | Service worker: opens the side panel from the icon, opens the welcome page on install |
+| `src/content/` | Alt+hover highlight, Alt+click sends the element's `data-source` to the side panel |
+| `src/sidepanel/` | Side panel UI: loads `graph.json`, component dropdown |
+| `src/welcome/` | Welcome page |
+| `src/lib/graph.ts` | Load and query `graph.json` |
+| `vite.config.ts` | Pages and service worker |
+| `vite.content.config.ts` | Content script, built separately as one classic script |
