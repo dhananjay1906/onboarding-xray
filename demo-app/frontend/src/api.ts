@@ -36,16 +36,22 @@ const API_BASE = (import.meta.env.VITE_API_BASE ?? "").replace(/\/+$/, "");
 // Anonymous per-browser id; the backend scopes orders to it.
 let memorySessionId: string | null = null;
 
+function newSessionId(): string {
+  // randomUUID only exists in secure contexts (https/localhost).
+  if (typeof crypto.randomUUID === "function") return crypto.randomUUID();
+  return Array.from(crypto.getRandomValues(new Uint8Array(16)), (b) => b.toString(16).padStart(2, "0")).join("");
+}
+
 function getSessionId(): string {
   try {
     let id = localStorage.getItem("xray-session-id");
     if (!id) {
-      id = crypto.randomUUID();
+      id = newSessionId();
       localStorage.setItem("xray-session-id", id);
     }
     return id;
   } catch {
-    memorySessionId ??= crypto.randomUUID();
+    memorySessionId ??= newSessionId();
     return memorySessionId;
   }
 }
@@ -57,7 +63,9 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   });
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
-    throw new Error(body.detail ?? `Request failed (${res.status})`);
+    // FastAPI validation errors (422) send a list in `detail`, not a string.
+    const detail = typeof body.detail === "string" ? body.detail : null;
+    throw new Error(detail ?? (res.status === 404 ? "Not found" : `Request failed (${res.status})`));
   }
   return res.json() as Promise<T>;
 }
