@@ -1,6 +1,32 @@
 @import "tailwindcss";
 
+/* The panel is light-only; without this React Flow's light-dark() colors turn the canvas dark in dark mode. */
+:root,
+.react-flow {
+  color-scheme: light;
+}
+
 body {
   @apply bg-slate-50 text-slate-900 antialiased;
   font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
 }
+
+/* Syntax highlighting (Prism token classes), light theme */
+.xray-code .token.comment,
+.xray-code .token.docstring { color: #64748b; font-style: italic; }
+.xray-code .token.keyword,
+.xray-code .token.boolean,
+.xray-code .token.operator.keyword { color: #7c3aed; }
+.xray-code .token.string,
+.xray-code .token.template-string,
+.xray-code .token.attr-value { color: #047857; }
+.xray-code .token.number,
+.xray-code .token.constant { color: #b45309; }
+.xray-code .token.function,
+.xray-code .token.class-name,
+.xray-code .token.tag { color: #1d4ed8; }
+.xray-code .token.decorator,
+.xray-code .token.builtin,
+.xray-code .token.attr-name { color: #0f766e; }
+.xray-code .token.punctuation,
+.xray-code .token.operator { color: #475569; }
