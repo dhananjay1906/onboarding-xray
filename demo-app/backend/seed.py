@@ -13,17 +13,17 @@ PRODUCTS = [
 ]
 
 
-def seed() -> None:
-    init_db()
-    with Session(engine) as session:
+def seed(db_engine=engine) -> bool:
+    """Create tables and insert sample products if the table is empty. Returns True if seeded."""
+    init_db(db_engine)
+    with Session(db_engine) as session:
         if session.exec(select(Product)).first():
-            print("Products already seeded.")
-            return
+            return False
         for name, desc, price, emoji in PRODUCTS:
             session.add(Product(name=name, description=desc, price_cents=price, image_emoji=emoji))
         session.commit()
-        print(f"Seeded {len(PRODUCTS)} products.")
+        return True
 
 
 if __name__ == "__main__":
-    seed()
+    print(f"Seeded {len(PRODUCTS)} products." if seed() else "Products already seeded.")

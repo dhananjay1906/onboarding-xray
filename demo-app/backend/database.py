@@ -5,8 +5,8 @@ engine = create_engine(
 )
 
 
-def init_db() -> None:
-    SQLModel.metadata.create_all(engine)
+def init_db(db_engine=engine) -> None:
+    SQLModel.metadata.create_all(db_engine)
 
 
 def get_session():

@@ -8,7 +8,6 @@ export default function Checkout() {
   const { lines, totalCents, clear } = useCart();
   const navigate = useNavigate();
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -19,7 +18,6 @@ export default function Checkout() {
     try {
       await createOrder({
         customer_name: name,
-        customer_email: email,
         items: lines.map((l) => ({ product_id: l.product.id, quantity: l.quantity })),
       });
       clear();
@@ -49,10 +47,6 @@ export default function Checkout() {
         <label>
           Name
           <input value={name} onChange={(e) => setName(e.target.value)} required />
-        </label>
-        <label>
-          Email
-          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
         </label>
         {error && <p className="error">{error}</p>}
         <button className="btn" type="submit" disabled={submitting}>

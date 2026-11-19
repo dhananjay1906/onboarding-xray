@@ -9,15 +9,15 @@ class OrderError(Exception):
 
 def place_order(
     session: Session,
+    session_id: str,
     customer_name: str,
-    customer_email: str,
     items: list[tuple[int, int]],
 ) -> Order:
     """Create an Order and its OrderItems. items = [(product_id, quantity)]."""
     if not items:
         raise OrderError("Cart is empty")
 
-    order = Order(customer_name=customer_name, customer_email=customer_email, total_cents=0)
+    order = Order(session_id=session_id, customer_name=customer_name, total_cents=0)
     session.add(order)
     session.flush()  # assigns order.id
 
@@ -49,8 +49,9 @@ def place_order(
     return order
 
 
-def list_orders(session: Session) -> list[Order]:
-    return list(session.exec(select(Order).order_by(Order.id.desc())).all())
+def list_orders(session: Session, session_id: str) -> list[Order]:
+    statement = select(Order).where(Order.session_id == session_id).order_by(Order.id.desc())
+    return list(session.exec(statement).all())
 
 
 def get_order_items(session: Session, order_id: int) -> list[OrderItem]:

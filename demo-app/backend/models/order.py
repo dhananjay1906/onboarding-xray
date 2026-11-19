@@ -6,8 +6,8 @@ from sqlmodel import Field, SQLModel
 
 class Order(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
+    session_id: str = Field(index=True)
     customer_name: str
-    customer_email: str
     total_cents: int
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 

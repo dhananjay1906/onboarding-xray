@@ -10,7 +10,7 @@
     "esModuleInterop": true,
     "noEmit": true,
     "isolatedModules": true,
-    "types": ["node"]
+    "types": ["node", "vite/client"]
   },
   "include": ["src", "plugins", "vite.config.ts"]
 }
