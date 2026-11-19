@@ -236,3 +236,5 @@ extension/dist/
 analyzer/out/
 # The bundled demo graph is committed (the generic graph.json rule above ignores other copies).
 !extension/public/graph.json
+# The Python "lib/" rule above would otherwise hide the extension source in src/lib.
+!extension/src/lib/
