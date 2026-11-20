@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite build --watch --mode development",
-    "build:dev": "tsc --noEmit && vite build --mode development && vite build -c vite.content.config.ts",
-    "build": "tsc --noEmit && vite build && vite build -c vite.content.config.ts",
+    "build:dev": "tsc --noEmit && vite build --mode development && vite build -c vite.content.config.ts && node scripts/check-mv3.mjs",
+    "build": "tsc --noEmit && vite build && vite build -c vite.content.config.ts && node scripts/check-mv3.mjs",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "build:submission": "tsc --noEmit && vite build --mode submission && vite build -c vite.content.config.ts --mode submission && node scripts/check-mv3.mjs --submission",

@@ -18,8 +18,8 @@ function manifest(): Plugin {
   };
 }
 
-// Submission build only. @firebase/app ships an allowlist of remote script URLs (gtag, gapi, reCAPTCHA).
-// Manifest V3 forbids remotely hosted code and this build never loads any, so empty the list: no remote
+// All builds. @firebase/app ships an allowlist of remote script URLs (gtag, gapi, reCAPTCHA).
+// Manifest V3 forbids remotely hosted code and the extension never loads any, so empty the list: no remote
 // script URL stays in the bundle, and the SDK's script-URL check would reject every URL anyway.
 function emptyRemoteScriptAllowlist(): Plugin {
   const pattern = /const ALLOWED_SCRIPT_URLS = \[[\s\S]*?\];/;
@@ -51,7 +51,7 @@ export default defineConfig(({ mode }) => {
   }
 
   return {
-    plugins: [react(), tailwindcss(), manifest(), ...(submission ? [emptyRemoteScriptAllowlist()] : [])],
+    plugins: [react(), tailwindcss(), manifest(), emptyRemoteScriptAllowlist()],
     envDir, // only VITE_* variables reach the bundle; XRAY_* never does
     define: {
       // Empty outside submission builds, so the debug token can only ever come from the explicit variable above.

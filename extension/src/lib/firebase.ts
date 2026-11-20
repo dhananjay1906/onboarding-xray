@@ -5,7 +5,6 @@ import { initializeApp, type FirebaseApp } from "firebase/app";
 import {
   CustomProvider,
   initializeAppCheck,
-  ReCaptchaEnterpriseProvider,
   type AppCheck,
 } from "firebase/app-check";
 import { indexedDBLocalPersistence, initializeAuth, signInAnonymously, type Auth } from "firebase/auth/web-extension";
@@ -20,11 +19,6 @@ const config = {
   messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
   storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
 };
-
-// The submission build uses the App Check debug provider only: no reCAPTCHA site key and no reCAPTCHA code
-// (this ternary and the `if` in getFirebase() fold at build time, so the bundler drops the reCAPTCHA provider).
-const siteKey: string | undefined =
-  import.meta.env.MODE === "submission" ? undefined : import.meta.env.VITE_RECAPTCHA_ENTERPRISE_SITE_KEY;
 
 export interface Firebase {
   app: FirebaseApp;
@@ -62,22 +56,18 @@ export function getFirebase(): Firebase {
 
   const missing = [
     ...Object.entries(config).filter(([, v]) => !v).map(([k]) => `VITE_FIREBASE_${k.replace(/[A-Z]/g, (c) => "_" + c).toUpperCase()}`),
-    ...(import.meta.env.MODE === "submission" || siteKey ? [] : ["VITE_RECAPTCHA_ENTERPRISE_SITE_KEY"]),
   ];
   if (missing.length) {
     throw new Error(`Missing in .env: ${missing.join(", ")}. Copy .env.example to .env and fill the values, then rebuild.`);
   }
 
   const app = initializeApp(config);
-  let provider: CustomProvider | ReCaptchaEnterpriseProvider;
-  if (import.meta.env.MODE === "submission") {
-    // In debug mode the SDK exchanges the injected debug token itself and never calls this provider.
-    provider = new CustomProvider({
-      getToken: () => Promise.reject(new Error("Submission build: App Check uses the injected debug token only.")),
-    });
-  } else {
-    provider = new ReCaptchaEnterpriseProvider(siteKey!);
-  }
+  // Every extension build uses the App Check debug provider only: reCAPTCHA loads a remote script, which the
+  // Manifest V3 content security policy blocks. In debug mode the SDK exchanges the debug token itself and
+  // never calls this provider.
+  const provider = new CustomProvider({
+    getToken: () => Promise.reject(new Error("App Check in the extension uses the debug token only.")),
+  });
   const appCheck = initializeAppCheck(app, { provider, isTokenAutoRefreshEnabled: true });
   instance = { app, appCheck, appCheckDebug };
   return instance;

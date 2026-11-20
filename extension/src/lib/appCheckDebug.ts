@@ -1,13 +1,12 @@
 // Enables the App Check debug provider. This module must be imported BEFORE any firebase/* module:
 // the SDK reads self.FIREBASE_APPCHECK_DEBUG_TOKEN when it loads.
 //
-// Three cases:
+// Debug mode is always on: reCAPTCHA cannot run inside an extension (Manifest V3 blocks its remote script),
+// so there is no other App Check provider.
 //  - Submission build (`--mode submission`): the debug token is injected at build time from the
 //    XRAY_APPCHECK_DEBUG_TOKEN environment variable (see vite.config.ts). It is never in the repo.
-//  - Development builds (`npm run dev`, `npm run build:dev`), or VITE_APPCHECK_DEBUG=true, or
-//    VITE_APPCHECK_DEBUG_TOKEN set: the SDK generates (or uses) a token and prints it to the console:
-//      "Firebase App Check debug token: <uuid>"
-//  - Otherwise (plain `npm run build`): debug mode is off.
+//  - Every other build: the SDK generates a token (or uses VITE_APPCHECK_DEBUG_TOKEN if set) and prints it
+//    to the console: "Firebase App Check debug token: <uuid>"
 //
 // Only static `import.meta.env.X` reads are used here: Vite inlines every VITE_ variable in the bundle
 // if code reads `import.meta.env` as a whole object.
@@ -26,12 +25,6 @@ const fixedToken: string | undefined = isSubmissionBuild
   ? __XRAY_APPCHECK_DEBUG_TOKEN__ || undefined
   : import.meta.env.VITE_APPCHECK_DEBUG_TOKEN || undefined;
 
-export const appCheckDebug: boolean =
-  isSubmissionBuild ||
-  import.meta.env.MODE === "development" ||
-  import.meta.env.VITE_APPCHECK_DEBUG === "true" ||
-  !!fixedToken;
+export const appCheckDebug = true;
 
-if (appCheckDebug) {
-  self.FIREBASE_APPCHECK_DEBUG_TOKEN = fixedToken ?? true;
-}
+self.FIREBASE_APPCHECK_DEBUG_TOKEN = fixedToken ?? true;

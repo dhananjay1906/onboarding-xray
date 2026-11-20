@@ -3,6 +3,73 @@ import { SELECT_MESSAGE, type SelectMessage } from "../lib/messages";
 
 let box: HTMLDivElement | null = null;
 let lastTarget: Element | null = null;
+let toastShown = false;
+
+const STALE_MESSAGE = "X-Ray was updated — refresh this page to keep using it.";
+
+/** False once the extension was reloaded or removed: this old script is orphaned and chrome.runtime is dead. */
+function contextAlive(): boolean {
+  try {
+    return !!chrome.runtime?.id;
+  } catch {
+    return false;
+  }
+}
+
+function isContextInvalidated(error: unknown): boolean {
+  const text = error instanceof Error ? error.message : String(error ?? "");
+  return /extension context invalidated/i.test(text);
+}
+
+/** One small, self-dismissing notice. Shown once per page load. */
+function showStaleToast(): void {
+  if (toastShown) return;
+  toastShown = true;
+  try {
+    const toast = document.createElement("div");
+    toast.setAttribute("data-xray-overlay", "");
+    toast.setAttribute("role", "status");
+    toast.textContent = STALE_MESSAGE;
+    Object.assign(toast.style, {
+      position: "fixed",
+      right: "16px",
+      bottom: "16px",
+      maxWidth: "280px",
+      padding: "10px 14px",
+      borderRadius: "8px",
+      background: "#1e293b",
+      color: "#f8fafc",
+      font: "13px/1.4 system-ui, sans-serif",
+      boxShadow: "0 4px 16px rgba(0,0,0,.3)",
+      zIndex: "2147483647",
+      pointerEvents: "none",
+    } satisfies Partial<CSSStyleDeclaration>);
+    document.documentElement.appendChild(toast);
+    setTimeout(() => toast.remove(), 8000);
+  } catch {
+    // Nothing sensible to do if the page blocks DOM changes.
+  }
+}
+
+/** Remove every listener and the overlay, then tell the user once. Safe to call repeatedly. */
+function retire(): void {
+  document.removeEventListener("mousemove", onMouseMove, true);
+  document.removeEventListener("keydown", onKeyDown, true);
+  document.removeEventListener("keyup", onKeyUp, true);
+  document.removeEventListener("click", onClick, true);
+  window.removeEventListener("blur", hide);
+  box?.remove();
+  box = null;
+  lastTarget = null;
+  showStaleToast();
+}
+
+/** Returns true when it is safe to use chrome.runtime; otherwise retires this script. */
+function ensureAlive(): boolean {
+  if (contextAlive()) return true;
+  retire();
+  return false;
+}
 
 function getBox(): HTMLDivElement {
   if (!box) {
@@ -43,45 +110,50 @@ function isOverlay(el: Element | null): boolean {
   return !!el && el.hasAttribute("data-xray-overlay");
 }
 
-document.addEventListener(
-  "mousemove",
-  (e) => {
-    const target = e.target as Element | null;
-    lastTarget = target;
-    if (e.altKey && target && !isOverlay(target)) show(target);
-    else hide();
-  },
-  true,
-);
+function onMouseMove(e: MouseEvent): void {
+  const target = e.target as Element | null;
+  lastTarget = target;
+  if (e.altKey && target && !isOverlay(target)) show(target);
+  else hide();
+}
 
-document.addEventListener(
-  "keydown",
-  (e) => {
-    if (e.key === "Alt" && lastTarget) show(lastTarget);
-  },
-  true,
-);
-document.addEventListener("keyup", (e) => e.key === "Alt" && hide(), true);
-window.addEventListener("blur", hide);
+function onKeyDown(e: KeyboardEvent): void {
+  if (e.key !== "Alt") return;
+  if (!ensureAlive()) return;
+  if (lastTarget) show(lastTarget);
+}
 
-document.addEventListener(
-  "click",
-  (e) => {
-    if (!e.altKey) return;
-    const target = e.target as Element | null;
-    if (!target) return;
-    e.preventDefault();
-    e.stopPropagation();
-    const tagged = target.closest<HTMLElement>("[data-source]");
-    const message: SelectMessage = {
-      type: SELECT_MESSAGE,
-      source: tagged?.dataset.source ?? null,
-      component: tagged?.dataset.component ?? null,
-      url: location.href,
-    };
-    chrome.runtime.sendMessage(message).catch(() => {
-      // The side panel is not open: nothing is listening, which is fine.
+function onKeyUp(e: KeyboardEvent): void {
+  if (e.key === "Alt") hide();
+}
+
+function onClick(e: MouseEvent): void {
+  if (!e.altKey) return;
+  const target = e.target as Element | null;
+  if (!target) return;
+  if (!ensureAlive()) return; // old script after a reload: let the page handle the click normally
+  e.preventDefault();
+  e.stopPropagation();
+  const tagged = target.closest<HTMLElement>("[data-source]");
+  const message: SelectMessage = {
+    type: SELECT_MESSAGE,
+    source: tagged?.dataset.source ?? null,
+    component: tagged?.dataset.component ?? null,
+    url: location.href,
+  };
+  try {
+    chrome.runtime.sendMessage(message).catch((error: unknown) => {
+      // No listener means the side panel is not open, which is fine. A dead context means retire.
+      if (isContextInvalidated(error) || !contextAlive()) retire();
     });
-  },
-  true,
-);
+  } catch (error) {
+    // sendMessage can throw synchronously once the context is gone.
+    if (isContextInvalidated(error) || !contextAlive()) retire();
+  }
+}
+
+document.addEventListener("mousemove", onMouseMove, true);
+document.addEventListener("keydown", onKeyDown, true);
+document.addEventListener("keyup", onKeyUp, true);
+document.addEventListener("click", onClick, true);
+window.addEventListener("blur", hide);
