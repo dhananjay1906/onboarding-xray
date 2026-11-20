@@ -59,3 +59,36 @@ A Chrome extension cannot run reCAPTCHA Enterprise (it loads a remote script, wh
 4. Register it in the Firebase console: **Build, App Check, Apps**, select `xray-extension`, three-dot menu, **Manage debug tokens**, **Add debug token**, paste, name it, **Save**. Or with the CLI: `firebase appcheck:debugtokens:create <uuid> --project onboarding-xray --app <app id>`.
 
 The token is stored in the extension's IndexedDB, so it stays the same across reloads (it changes only if you clear the extension's site data or the unpacked extension's folder/ID changes). Never commit it. `npm run build` (production mode) does not enable debug mode; set `VITE_APPCHECK_DEBUG=true` in `.env` to force it. `VITE_APPCHECK_DEBUG_TOKEN` pins one fixed token, but it is then baked into `dist/`, so never ship a build made with it.
+
+## AI explanations (Firebase AI Logic hybrid inference)
+
+Every step in the side panel has an **Explanation** area with an **Explain this step** button; **Summarize whole flow** explains the whole chain. Requests start only from a click.
+
+| Mode (toggle in the panel header) | SDK mode | Behavior |
+|---|---|---|
+| Private only | `ONLY_ON_DEVICE` | On-device model only. No inference request, no Firestore cache, no Remote Config fetch. If the model is missing, or the prompt is too long, you get a clear message with **Download on-device model** and **Switch to Auto**. |
+| Auto (default) | `PREFER_ON_DEVICE` | On-device when the model is ready and the prompt fits `on_device_max_chars`; otherwise the cloud. |
+| Best quality | `PREFER_IN_CLOUD` | Cloud model, on-device as a fallback. |
+
+Each answer shows a badge: green **On-device · private**, or blue **Cloud** with the reason (`model not downloaded`, `on-device unavailable`, `too long for on-device`, `Best quality mode`). The status pill shows **On-device ready**, **Downloading N%** or **Cloud only**. The choice is remembered in `localStorage`.
+
+The code is in `src/lib/explain.ts` (mode logic, caches, prompts, unit-tested), `firebaseModel.ts` (the SDK call) and `onDevice.ts` (Chrome Prompt API availability and download).
+
+**Cache (Firestore + anonymous Auth).** Answers are cached in memory and in the shared Firestore collection `explanations`, keyed by `sha256(prompt version + mode tier + layer + code)`. Best quality and Auto answers are cached separately. Anonymous sign-in happens lazily the first time the shared cache is used, never in Private only mode. The shared cache is for the bundled demo graph, whose code is public. Rules are in `firestore.rules` (signed-in users can read one entry and create new ones; no update, delete or list). They are **not deployed automatically**:
+
+```
+firebase deploy --only firestore:rules
+```
+
+**Remote Config keys** (all optional, in-app defaults): `on_device_max_chars` (4000), `prompt_version` (`v1`; bump to invalidate cached answers), `default_mode` (`auto`, used until the user picks a mode), `cloud_model` (`gemini-3.5-flash-lite`).
+
+**App Check.** Firebase AI Logic rejects requests without a valid App Check token (`401 Firebase App Check token is invalid`), so register the debug token first (see above).
+
+**On-device model.** Needs Chrome 139+ on a supported device. Check `chrome://on-device-internals`. Without it, everything works in Cloud mode.
+
+## Tests
+
+```
+cd extension
+npm test
+```

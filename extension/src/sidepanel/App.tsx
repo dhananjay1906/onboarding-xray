@@ -7,14 +7,38 @@ import {
   loadGraph,
   type Graph,
 } from "../lib/graph";
+import { readStoredMode, storeMode, type PrivacyMode } from "../lib/modes";
+import { loadSettings } from "../lib/settings";
 import ChainDiagram from "./components/ChainDiagram";
 import ErrorBoundary from "./components/ErrorBoundary";
+import ExplanationBox from "./components/ExplanationBox";
 import RepoMap from "./components/RepoMap";
+import StatusBar from "./components/StatusBar";
 import StepList from "./components/StepList";
+import { flowRequest, stepRequest } from "./prompts";
+import { useExplanations } from "./useExplanations";
+import { useOnDevice } from "./useOnDevice";
 
 type Tab = "xray" | "map";
 
 export default function App() {
+  const [mode, setModeState] = useState<PrivacyMode>(() => readStoredMode() ?? "auto");
+  const onDevice = useOnDevice();
+  const { states, run } = useExplanations(mode);
+
+  const setMode = useCallback((m: PrivacyMode) => {
+    setModeState(m);
+    storeMode(m);
+  }, []);
+
+  // Remote Config (prompt limits, default mode, cloud model). Private only skips the fetch: no network at all.
+  useEffect(() => {
+    if (mode === "private") return;
+    void loadSettings().then((s) => {
+      if (!readStoredMode()) setModeState(s.defaultMode); // default_mode applies until the user picks one
+    });
+  }, [mode]);
+
   const [graph, setGraph] = useState<Graph | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [tab, setTab] = useState<Tab>("xray");
@@ -67,9 +91,20 @@ export default function App() {
 
   return (
     <div className="mx-auto flex min-h-screen max-w-2xl flex-col">
-      <header className="sticky top-0 z-10 border-b border-slate-200 bg-white px-4 pt-3">
-        <h1 className="text-base font-semibold">Onboarding X-Ray</h1>
-        <div role="tablist" className="mt-2 flex gap-4">
+      <header className="bg-white px-4 pt-3">
+        <h1 className="mb-2 text-base font-semibold">Onboarding X-Ray</h1>
+        <StatusBar
+          mode={mode}
+          onModeChange={setMode}
+          state={onDevice.state}
+          checked={onDevice.checked}
+          progress={onDevice.progress}
+          error={onDevice.error}
+          onDownload={() => void onDevice.download()}
+        />
+      </header>
+      <nav className="sticky top-0 z-10 border-b border-slate-200 bg-white px-4">
+        <div role="tablist" className="flex gap-4">
           {(
             [
               ["xray", "X-Ray"],
@@ -89,7 +124,7 @@ export default function App() {
             </button>
           ))}
         </div>
-      </header>
+      </nav>
 
       <main className="flex flex-1 flex-col gap-4 p-4">
         {error && (
@@ -197,7 +232,44 @@ export default function App() {
                     )}
 
                     <ChainDiagram graph={graph} nodeIds={nodeIds} selectedId={nodeId} onSelect={setNodeId} />
-                    <StepList graph={graph} nodeIds={nodeIds} selectedId={nodeId} onSelect={setNodeId} />
+                    {chain && (
+                      <section aria-label="Whole flow" className="rounded border border-slate-200 bg-white p-3">
+                        <h2 className="mb-2 text-sm font-semibold">Whole flow</h2>
+                        {(() => {
+                          const req = flowRequest(graph, nodeIds);
+                          return req ? (
+                            <ExplanationBox
+                              label="Summarize whole flow"
+                              state={states[`flow:${chain.id}`]}
+                              onExplain={() => void run(`flow:${chain.id}`, req)}
+                              onDeviceState={onDevice.state}
+                              onDownload={() => void onDevice.download()}
+                              downloading={onDevice.progress !== null || onDevice.state === "downloading"}
+                              onSwitchToAuto={() => setMode("auto")}
+                            />
+                          ) : null;
+                        })()}
+                      </section>
+                    )}
+                    <StepList
+                      graph={graph}
+                      nodeIds={nodeIds}
+                      selectedId={nodeId}
+                      onSelect={setNodeId}
+                      renderExplanation={(id, index) => {
+                        const req = stepRequest(graph, nodeIds, index);
+                        return req ? (
+                          <ExplanationBox
+                            state={states[`step:${id}`]}
+                            onExplain={() => void run(`step:${id}`, req)}
+                            onDeviceState={onDevice.state}
+                            onDownload={() => void onDevice.download()}
+                            downloading={onDevice.progress !== null || onDevice.state === "downloading"}
+                            onSwitchToAuto={() => setMode("auto")}
+                          />
+                        ) : null;
+                      }}
+                    />
                   </>
                 )}
               </>

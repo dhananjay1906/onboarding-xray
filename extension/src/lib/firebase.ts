@@ -1,7 +1,10 @@
-// Firebase init for the extension: app + App Check. (AI Logic, Firestore, Auth and Remote Config come later.)
+// Firebase init for the extension: app, App Check, anonymous Auth and Firestore.
+// (AI Logic lives in firebaseModel.ts, Remote Config in settings.ts.)
 import { appCheckDebug } from "./appCheckDebug"; // keep first: sets the debug flag before the SDK loads
 import { initializeApp, type FirebaseApp } from "firebase/app";
 import { initializeAppCheck, ReCaptchaEnterpriseProvider, type AppCheck } from "firebase/app-check";
+import { indexedDBLocalPersistence, initializeAuth, signInAnonymously, type Auth } from "firebase/auth/web-extension";
+import { getFirestore, type Firestore } from "firebase/firestore";
 
 const env = import.meta.env;
 
@@ -21,6 +24,28 @@ export interface Firebase {
   appCheck: AppCheck;
   appCheckDebug: boolean;
 }
+
+let auth: Auth | null = null;
+let signIn: Promise<void> | null = null;
+
+/**
+ * Anonymous sign-in, done lazily the first time the shared cache is needed (never in Private only mode).
+ * Uses the web-extension build of Auth, which does not load remote scripts (Manifest V3 forbids them).
+ */
+export function ensureSignedIn(): Promise<void> {
+  signIn ??= (async () => {
+    const { app } = getFirebase();
+    auth ??= initializeAuth(app, { persistence: indexedDBLocalPersistence });
+    await auth.authStateReady();
+    if (!auth.currentUser) await signInAnonymously(auth);
+  })().catch((e) => {
+    signIn = null; // allow a retry on the next call
+    throw e;
+  });
+  return signIn;
+}
+
+export const getDb = (): Firestore => getFirestore(getFirebase().app);
 
 let instance: Firebase | null = null;
 

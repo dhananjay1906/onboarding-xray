@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import { fileLine, type Graph } from "../../lib/graph";
 import { LAYER_STYLE } from "../../lib/layers";
 import CodeBlock from "./CodeBlock";
@@ -8,10 +8,12 @@ interface Props {
   nodeIds: string[];
   selectedId: string | null;
   onSelect: (nodeId: string) => void;
+  /** The Explanation area for one step. */
+  renderExplanation: (nodeId: string, index: number) => ReactNode;
 }
 
 /** Ordered steps of the chain. The selected step shows its code; every step has an Explanation area. */
-export default function StepList({ graph, nodeIds, selectedId, onSelect }: Props) {
+export default function StepList({ graph, nodeIds, selectedId, onSelect, renderExplanation }: Props) {
   const selectedRef = useRef<HTMLLIElement | null>(null);
 
   useEffect(() => {
@@ -56,10 +58,7 @@ export default function StepList({ graph, nodeIds, selectedId, onSelect }: Props
                   <CodeBlock node={node} />
                 </div>
               )}
-              <div className="rounded border border-dashed border-slate-300 bg-slate-50 p-2 text-xs text-slate-500">
-                <span className="font-semibold text-slate-600">Explanation</span>
-                <span className="block">AI explanations are not connected yet. This step's explanation will appear here.</span>
-              </div>
+              {renderExplanation(id, i)}
             </div>
           </li>
         );
