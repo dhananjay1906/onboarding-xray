@@ -22,6 +22,8 @@ function manifest(): Plugin {
 // The content script is built separately (vite.content.config.ts) because it must be one classic script.
 export default defineConfig({
   plugins: [react(), tailwindcss(), manifest()],
+  // The shared .env lives at the repo root (only VITE_* variables reach the bundle).
+  envDir: path.resolve(process.cwd(), ".."),
   build: {
     outDir: "dist",
     emptyOutDir: true,
