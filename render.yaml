@@ -1,0 +1,16 @@
+# Render Blueprint for the demo store backend (free tier). Dashboard steps: demo-app/README.md, "Deploy".
+services:
+  - type: web
+    name: onboarding-xray-api
+    runtime: python
+    plan: free
+    rootDir: demo-app/backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/products
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.8
+      # CORS: the Firebase Hosting URLs. The app seeds the SQLite database on startup (Render's free disk is wiped on restart).
+      - key: ALLOWED_ORIGINS
+        value: https://onboarding-xray.web.app,https://onboarding-xray.firebaseapp.com
