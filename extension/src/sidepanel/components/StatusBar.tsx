@@ -35,7 +35,7 @@ export default function StatusBar({ mode, onModeChange, state, checked, progress
           </button>
         )}
         {checked && state === "unavailable" && (
-          <span className="text-[11px] text-slate-500">This Chrome or device cannot run the on-device model.</span>
+          <span className="text-xs text-slate-500">This Chrome or device cannot run the on-device model.</span>
         )}
       </div>
 
@@ -48,14 +48,14 @@ export default function StatusBar({ mode, onModeChange, state, checked, progress
             aria-checked={mode === m.id}
             title={m.hint}
             onClick={() => onModeChange(m.id)}
-            className={`flex-1 px-2 py-1 ${mode === m.id ? "bg-indigo-600 font-semibold text-white" : "bg-white text-slate-700 hover:bg-slate-50"}`}
+            className={`flex-1 px-2 py-1 ${mode === m.id ? "bg-indigo-600 font-semibold text-white" : "bg-surface text-slate-700 hover:bg-slate-50"}`}
           >
             {m.label}
           </button>
         ))}
       </div>
-      <p className="text-[11px] text-slate-500">{MODES.find((m) => m.id === mode)?.hint}</p>
-      {error && <p role="alert" className="text-[11px] text-red-700">{error}</p>}
+      <p className="text-xs text-slate-500">{MODES.find((m) => m.id === mode)?.hint}</p>
+      {error && <p role="alert" className="text-xs text-red-700">{error}</p>}
     </div>
   );
 }

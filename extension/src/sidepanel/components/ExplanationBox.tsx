@@ -28,21 +28,26 @@ export default function ExplanationBox({ state, onExplain, onDeviceState, onDown
       )}
 
       {state?.status === "loading" && (
-        <p role="status" className="flex items-center gap-2 text-xs text-slate-500">
-          <span className="h-3 w-3 animate-spin rounded-full border-2 border-slate-300 border-t-indigo-600" />
-          Thinking…
-        </p>
+        <div role="status" aria-label="Thinking" className="flex animate-fade-in flex-col gap-2">
+          <span className="flex items-center gap-2 text-xs text-slate-500">
+            <span className="h-3 w-3 animate-spin rounded-full border-2 border-slate-300 border-t-indigo-600" />
+            Thinking…
+          </span>
+          <span className="skeleton h-3 w-full" />
+          <span className="skeleton h-3 w-11/12" />
+          <span className="skeleton h-3 w-2/3" />
+        </div>
       )}
 
       {state?.status === "done" && (
-        <div className="flex flex-col gap-2">
+        <div className="flex animate-fade-in flex-col gap-2">
           <p className="whitespace-pre-wrap text-slate-800">{state.result.text}</p>
           <SourceBadge source={state.result.source} reason={state.result.reason} cached={state.result.cached} />
         </div>
       )}
 
       {state?.status === "error" && (
-        <div role="alert" className="flex flex-col gap-2 text-xs text-red-700">
+        <div role="alert" className="flex animate-fade-in flex-col gap-2 text-xs text-red-700">
           <p>{state.message}</p>
           <div className="flex flex-wrap gap-2">
             {state.code === "NO_ON_DEVICE_MODEL" && onDeviceState === "downloadable" && (
@@ -51,11 +56,11 @@ export default function ExplanationBox({ state, onExplain, onDeviceState, onDown
               </button>
             )}
             {(state.code === "NO_ON_DEVICE_MODEL" || state.code === "TOO_LONG_FOR_PRIVATE") && (
-              <button type="button" onClick={onSwitchToAuto} className={`${button} bg-slate-700 text-white`}>
+              <button type="button" onClick={onSwitchToAuto} className={`${button} bg-[#334155] text-white`}>
                 Switch to Auto
               </button>
             )}
-            <button type="button" onClick={onExplain} className={`${button} bg-white text-slate-700 ring-1 ring-slate-300`}>
+            <button type="button" onClick={onExplain} className={`${button} bg-surface text-slate-700 ring-1 ring-slate-300`}>
               Try again
             </button>
           </div>

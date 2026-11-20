@@ -9,7 +9,7 @@ export default function CodeBlock({ node }: { node: GraphNode }) {
   const gutter = Array.from({ length: count }, (_, i) => node.line + i).join("\n");
 
   return (
-    <div className="flex max-h-72 overflow-auto rounded border border-slate-200 bg-white font-mono text-[11px] leading-5">
+    <div className="flex max-h-72 overflow-auto rounded border border-slate-200 bg-surface font-mono text-xs leading-5">
       <pre aria-hidden="true" className="sticky left-0 select-none border-r border-slate-200 bg-slate-50 px-2 text-right text-slate-400">
         {gutter}
       </pre>

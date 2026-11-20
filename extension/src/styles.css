@@ -1,17 +1,111 @@
 @import "tailwindcss";
 
-/* The panel is light-only; without this React Flow's light-dark() colors turn the canvas dark in dark mode. */
-:root,
-.react-flow {
-  color-scheme: light;
+/* ------------------------------------------------------------------------------------------------
+   Design tokens
+   Type scale used everywhere: text-xs (12px) meta and code, text-sm (14px) body, text-base (16px) titles.
+   Spacing: gap-4 between sections, p-3 inside cards, gap-2 inside a card.
+   ------------------------------------------------------------------------------------------------ */
+@theme {
+  --color-surface: #ffffff; /* cards, inputs, the sticky header */
+  --animate-shimmer: xray-shimmer 1.4s ease-in-out infinite;
+  --animate-fade-in: xray-fade-in 240ms ease-out both;
+  --animate-pulse-ring: xray-pulse-ring 2s ease-out infinite;
+}
+
+:root {
+  color-scheme: light dark; /* native controls, scrollbars and React Flow follow the OS theme */
+}
+
+/* Dark mode: the neutral (slate) scale is mirrored and the tinted backgrounds become translucent,
+   so every existing slate / tint utility class turns dark without per-component dark: variants.
+   Saturated button colors (-600) and text-white stay as they are. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-surface: #111b2e;
+    --color-slate-50: #0b1220;
+    --color-slate-100: #172236;
+    --color-slate-200: #26354b;
+    --color-slate-300: #384a64;
+    --color-slate-400: #6b7c96;
+    --color-slate-500: #98a6bb;
+    --color-slate-600: #b3bfd0;
+    --color-slate-700: #ccd5e2;
+    --color-slate-800: #e3e9f2;
+    --color-slate-900: #f2f5fa;
+
+    --color-indigo-50: rgb(99 102 241 / 0.16);
+    --color-indigo-100: rgb(99 102 241 / 0.24);
+    --color-indigo-700: #a5b4fc;
+    --color-indigo-900: #e0e7ff;
+    --color-sky-50: rgb(14 165 233 / 0.14);
+    --color-sky-100: rgb(14 165 233 / 0.22);
+    --color-sky-700: #7dd3fc;
+    --color-sky-800: #bae6fd;
+    --color-sky-900: #e0f2fe;
+    --color-emerald-50: rgb(16 185 129 / 0.14);
+    --color-emerald-100: rgb(16 185 129 / 0.22);
+    --color-emerald-700: #6ee7b7;
+    --color-emerald-800: #a7f3d0;
+    --color-emerald-900: #d1fae5;
+    --color-amber-50: rgb(245 158 11 / 0.14);
+    --color-amber-100: rgb(245 158 11 / 0.22);
+    --color-amber-700: #fcd34d;
+    --color-amber-800: #fde68a;
+    --color-red-50: rgb(239 68 68 / 0.14);
+    --color-red-200: rgb(239 68 68 / 0.4);
+    --color-red-700: #fca5a5;
+  }
 }
 
 body {
-  @apply bg-slate-50 text-slate-900 antialiased;
+  @apply bg-slate-50 text-sm text-slate-900 antialiased;
   font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 
-/* Syntax highlighting (Prism token classes), light theme */
+code,
+kbd,
+pre {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+/* ------------------------------------------------------------------------------------------------
+   Motion
+   ------------------------------------------------------------------------------------------------ */
+@keyframes xray-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+@keyframes xray-fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes xray-pulse-ring {
+  0% { box-shadow: 0 0 0 0 rgb(99 102 241 / 0.55); }
+  70%, 100% { box-shadow: 0 0 0 12px rgb(99 102 241 / 0); }
+}
+
+/* Skeleton line shown while an explanation is being generated */
+.skeleton {
+  border-radius: 0.25rem;
+  background-image: linear-gradient(90deg, var(--color-slate-200) 25%, var(--color-slate-100) 50%, var(--color-slate-200) 75%);
+  background-size: 200% 100%;
+  animation: var(--animate-shimmer);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton,
+  .animate-fade-in,
+  .animate-pulse-ring {
+    animation: none !important;
+  }
+  * {
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ------------------------------------------------------------------------------------------------
+   Syntax highlighting (Prism token classes)
+   ------------------------------------------------------------------------------------------------ */
 .xray-code .token.comment,
 .xray-code .token.docstring { color: #64748b; font-style: italic; }
 .xray-code .token.keyword,
@@ -30,3 +124,24 @@ body {
 .xray-code .token.attr-name { color: #0f766e; }
 .xray-code .token.punctuation,
 .xray-code .token.operator { color: #475569; }
+
+@media (prefers-color-scheme: dark) {
+  .xray-code .token.comment,
+  .xray-code .token.docstring { color: #8393ab; }
+  .xray-code .token.keyword,
+  .xray-code .token.boolean,
+  .xray-code .token.operator.keyword { color: #c4b5fd; }
+  .xray-code .token.string,
+  .xray-code .token.template-string,
+  .xray-code .token.attr-value { color: #6ee7b7; }
+  .xray-code .token.number,
+  .xray-code .token.constant { color: #fcd34d; }
+  .xray-code .token.function,
+  .xray-code .token.class-name,
+  .xray-code .token.tag { color: #93c5fd; }
+  .xray-code .token.decorator,
+  .xray-code .token.builtin,
+  .xray-code .token.attr-name { color: #5eead4; }
+  .xray-code .token.punctuation,
+  .xray-code .token.operator { color: #a8b4c6; }
+}

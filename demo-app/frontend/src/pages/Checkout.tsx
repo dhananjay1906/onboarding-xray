@@ -49,7 +49,7 @@ export default function Checkout() {
           <input value={name} onChange={(e) => setName(e.target.value)} required />
         </label>
         {error && <p className="error">{error}</p>}
-        <button className="btn" type="submit" disabled={submitting}>
+        <button className="btn suggested" type="submit" disabled={submitting}>
           {submitting ? "Placing order…" : "Place order"}
         </button>
       </form>

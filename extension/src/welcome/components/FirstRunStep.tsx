@@ -60,7 +60,7 @@ export default function FirstRunStep() {
         <li>Open the demo store in a new tab.</li>
         <li>Add a product to the cart, open the cart, then go to the checkout page.</li>
         <li>
-          Hold <kbd className="rounded border border-slate-300 bg-slate-100 px-1">Alt</kbd> and click the <strong>Place order</strong> button (the
+          Hold <kbd className="rounded border border-slate-300 bg-slate-100 px-1">Alt</kbd> and click the <strong className="rounded bg-indigo-100 px-1.5 py-0.5 text-indigo-900">Place order</strong> button (the
           Checkout button).
         </li>
         <li>Watch this page, and open the side panel to see the whole chain.</li>

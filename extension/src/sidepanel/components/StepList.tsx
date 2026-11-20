@@ -31,7 +31,7 @@ export default function StepList({ graph, nodeIds, selectedId, onSelect, renderE
           <li
             key={id}
             ref={selected ? selectedRef : undefined}
-            className="rounded border bg-white"
+            className="rounded border bg-surface"
             style={{ borderColor: selected ? style.color : "#e2e8f0" }}
           >
             <button
@@ -41,14 +41,14 @@ export default function StepList({ graph, nodeIds, selectedId, onSelect, renderE
               onClick={() => onSelect(id)}
             >
               <span
-                className="mt-0.5 rounded px-1.5 py-0.5 text-[10px] font-semibold text-white"
+                className="mt-0.5 rounded px-1.5 py-0.5 text-xs font-semibold text-white"
                 style={{ background: style.color }}
               >
                 {i + 1}. {style.label}
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-sm font-semibold">{node.name}</span>
-                <span className="block truncate font-mono text-[11px] text-slate-500">{fileLine(node)}</span>
+                <span className="block truncate font-mono text-xs text-slate-500">{fileLine(node)}</span>
               </span>
             </button>
 

@@ -105,8 +105,8 @@ export default function App() {
   const nodeIds = chain ? chain.path : component ? [component.id] : [];
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-2xl flex-col">
-      <header className="bg-white px-4 pt-3">
+    <div className="flex min-h-screen w-full flex-col">
+      <header className="bg-surface px-4 pt-3">
         <div className="mb-2 flex items-center justify-between">
           <h1 className="text-base font-semibold">Onboarding X-Ray</h1>
           <button
@@ -129,7 +129,7 @@ export default function App() {
           onDownload={() => void onDevice.download()}
         />
       </header>
-      <nav className="sticky top-0 z-10 border-b border-slate-200 bg-white px-4">
+      <nav className="sticky top-0 z-10 border-b border-slate-200 bg-surface px-4">
         <div role="tablist" className="flex gap-4">
           {(
             [
@@ -171,7 +171,7 @@ export default function App() {
         )}
 
         {graph && components.length === 0 && (
-          <div className="rounded border border-slate-200 bg-white p-4 text-sm text-slate-600">
+          <div className="rounded border border-slate-200 bg-surface p-4 text-sm text-slate-600">
             <p className="font-semibold">graph.json has no components.</p>
             <p className="mt-1">
               Run <code className="rounded bg-slate-100 px-1">npm run analyze</code> at the repo root, then rebuild the
@@ -218,7 +218,7 @@ export default function App() {
                 <label className="flex flex-col gap-1 text-sm font-medium">
                   Component ({components.length})
                   <select
-                    className="rounded border border-slate-300 bg-white p-2 text-sm font-normal"
+                    className="rounded border border-slate-300 bg-surface p-2 text-sm font-normal"
                     value={componentId}
                     onChange={(e) => {
                       setNotice(null);
@@ -235,8 +235,8 @@ export default function App() {
                 </label>
 
                 {!component && (
-                  <div className="rounded border border-dashed border-slate-300 bg-white p-4 text-sm text-slate-500">
-                    Alt+click an element in the demo app, pick a component above, or open the Repo map.
+                  <div className="rounded border border-dashed border-slate-300 bg-surface p-4 text-sm text-slate-500">
+                    Alt+click an element in the demo app, pick a component above, or open the Repo map. Good first click: <strong className="font-semibold text-indigo-700">Place order</strong> on the checkout page.
                   </div>
                 )}
 
@@ -246,7 +246,7 @@ export default function App() {
                       <label className="flex flex-col gap-1 text-sm font-medium">
                         Chain ({chains.length})
                         <select
-                          className="rounded border border-slate-300 bg-white p-2 text-sm font-normal"
+                          className="rounded border border-slate-300 bg-surface p-2 text-sm font-normal"
                           value={chain?.id}
                           onChange={(e) => {
                             setChainId(e.target.value);
@@ -270,7 +270,7 @@ export default function App() {
 
                     <ChainDiagram graph={graph} nodeIds={nodeIds} selectedId={nodeId} onSelect={setNodeId} />
                     {chain && (
-                      <section aria-label="Whole flow" className="rounded border border-slate-200 bg-white p-3">
+                      <section aria-label="Whole flow" className="rounded border border-slate-200 bg-surface p-3">
                         <h2 className="mb-2 text-sm font-semibold">Whole flow</h2>
                         {(() => {
                           const req = flowRequest(graph, nodeIds);

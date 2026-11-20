@@ -22,10 +22,10 @@ export default function RepoMap({ graph, onOpen }: { graph: Graph; onOpen: (comp
             <button
               type="button"
               onClick={() => onOpen(component.id)}
-              className="w-full rounded border border-slate-200 bg-white p-2 text-left hover:border-indigo-300 hover:bg-indigo-50"
+              className="w-full rounded border border-slate-200 bg-surface p-2 text-left hover:border-indigo-300 hover:bg-indigo-50"
             >
               <span className="block text-sm font-semibold">{component.name}</span>
-              <span className="block truncate font-mono text-[11px] text-slate-500">
+              <span className="block truncate font-mono text-xs text-slate-500">
                 {component.file}:{component.line}-{component.end_line}
               </span>
               {endpoints.length === 0 ? (
@@ -33,7 +33,7 @@ export default function RepoMap({ graph, onOpen }: { graph: Graph; onOpen: (comp
               ) : (
                 <span className="mt-1 flex flex-wrap gap-1">
                   {endpoints.map((e) => (
-                    <span key={e} className="rounded bg-sky-100 px-1.5 py-0.5 font-mono text-[11px] text-sky-800">
+                    <span key={e} className="rounded bg-sky-100 px-1.5 py-0.5 font-mono text-xs text-sky-800">
                       {e}
                     </span>
                   ))}

@@ -11,7 +11,7 @@ const BADGE: Record<StepStatus, { text: string; cls: string }> = {
 export default function Step({ n, title, status, children }: { n: number; title: string; status: StepStatus; children: ReactNode }) {
   const badge = BADGE[status];
   return (
-    <section aria-label={`Step ${n}: ${title}`} className="rounded-lg border border-slate-200 bg-white p-5">
+    <section aria-label={`Step ${n}: ${title}`} className="rounded-lg border border-slate-200 bg-surface p-5">
       <header className="mb-3 flex items-center gap-3">
         <span className={`flex h-7 w-7 items-center justify-center rounded-full text-sm font-semibold ${status === "done" ? "bg-emerald-600 text-white" : "bg-indigo-600 text-white"}`}>
           {status === "done" ? "✓" : n}
@@ -39,9 +39,9 @@ export function CopyBlock({ text }: { text: string }) {
     }
   }
   return (
-    <div className="flex items-start gap-2 rounded bg-slate-900 p-2 text-slate-100">
+    <div className="flex items-start gap-2 rounded bg-[#0b1220] p-2 text-[#e2e8f0] ring-1 ring-white/10">
       <code className="min-w-0 flex-1 break-all font-mono text-xs leading-5">{text}</code>
-      <button type="button" onClick={() => void copy()} className="rounded bg-slate-700 px-2 py-0.5 text-xs hover:bg-slate-600">
+      <button type="button" onClick={() => void copy()} className="rounded bg-[#334155] px-2 py-0.5 text-xs text-white hover:bg-[#475569]">
         {copied ? "Copied" : "Copy"}
       </button>
     </div>
