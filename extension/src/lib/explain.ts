@@ -53,6 +53,8 @@ export interface ExplainDeps {
   memory: Map<string, CachedExplanation>;
   /** Shared cache (Firestore). Never used in Private only mode. */
   remote?: RemoteCache;
+  /** Return false to keep this graph's explanations out of the shared cache (e.g. the user's private code). */
+  canShare?: () => boolean;
 }
 
 const RULES =
@@ -105,7 +107,8 @@ export function createExplainer(deps: ExplainDeps) {
 
     const hit = deps.memory.get(key);
     if (hit) return fromCache(hit);
-    if (mode !== "private" && deps.remote) {
+    const useShared = mode !== "private" && !!deps.remote && (deps.canShare?.() ?? true);
+    if (useShared && deps.remote) {
       const shared = await deps.remote.get(key).catch(() => undefined); // a cache problem never blocks an explanation
       if (shared && shared.promptVersion === settings.promptVersion) {
         deps.memory.set(key, shared);
@@ -152,7 +155,7 @@ export function createExplainer(deps: ExplainDeps) {
     const reason = out.source === "cloud" ? cloudReason(mode, tooLong, state) : null;
     const entry: CachedExplanation = { text, source: out.source, reason, promptVersion: settings.promptVersion };
     deps.memory.set(key, entry);
-    if (mode !== "private" && deps.remote) {
+    if (useShared && deps.remote) {
       void deps.remote.set(key, entry).catch(() => {}); // best effort
     }
     return { text, source: out.source, reason, cached: false };

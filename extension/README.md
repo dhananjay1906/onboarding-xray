@@ -152,3 +152,17 @@ Use the **debugTokenId** from the `judges-2026` row (the long id at the end of i
 - **Distribution.** Prefer an unlisted or private Web Store listing, or a GitHub release only for the judging period.
 - **Never put the token in the README, the demo video, the Devpost text or a commit.** The panel's console prints it (`Firebase App Check debug token: ...`) when it opens, so do not film the console.
 - The submission manifest's content script runs on `localhost:5173` and on `https://onboarding-xray.web.app` and `https://onboarding-xray.firebaseapp.com` (the default Firebase Hosting URLs for the hosted demo). It requests no other site access.
+
+## Welcome page and tour
+
+`welcome.html` opens automatically on install (`chrome.runtime.onInstalled`) and any time you click the **?** button in the side panel header. It has three steps and works the same in the dev and submission builds (it does not use Firebase).
+
+1. **Check your setup.** Shows your Chrome version (the on-device model needs 139+) and the on-device model status. If the model is downloadable, **Download on-device model** starts the download with a progress bar (Chrome needs a click for this). It explains that Cloud mode keeps working meanwhile and that **Private only** needs the model.
+2. **Try it: your first trace.** Opens the demo store (`https://onboarding-xray.web.app`, or `http://localhost:5173`) and asks you to Alt+click **Place order** on the checkout page. The page listens for the content script's messages and shows a success state with the chain when a traced element is clicked. **Open the side panel** opens the panel from the page.
+3. **Use your own project.**
+   - **Analyze:** `npm run analyze -- --backend path/to/backend --frontend path/to/frontend --no-copy` writes `analyzer/out/graph.json` and leaves the bundled demo graph alone.
+   - **Tag** your frontend with the Vite plugin (`demo-app/frontend/plugins/dataSource.ts`).
+   - **Load graph.json:** choose the file. It is validated, stored in the extension's IndexedDB, and the side panel switches to it (banner: "Showing your graph", **Use demo graph** to go back). Explanations of your own code never go to the shared Firestore cache.
+   - **Enable on your app:** enter your app's address; Chrome asks for permission for that one site (optional host permission), and the content script is registered there. Reload the app's tab, then Alt+click. Remove a site with **Remove**.
+
+The demo origins (`localhost:5173`, the two default Firebase Hosting URLs) are always enabled via the manifest. The hosted demo link only works after the demo is deployed to Firebase Hosting.

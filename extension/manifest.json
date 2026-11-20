@@ -4,7 +4,8 @@
   "version": "0.1.0",
   "description": "Alt+click any element in a running app to see the code chain behind it: component, API call, route, functions, database table.",
   "minimum_chrome_version": "114",
-  "permissions": ["sidePanel"],
+  "permissions": ["sidePanel", "scripting"],
+  "optional_host_permissions": ["http://*/*", "https://*/*"],
   "icons": {
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",

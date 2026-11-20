@@ -51,3 +51,11 @@ python analyzer/merge_graph.py
 ```
 python -m pytest analyzer/tests
 ```
+
+## Analyzing your own project
+
+```
+npm run analyze -- --backend path/to/backend --frontend path/to/frontend --no-copy
+```
+
+`--no-copy` writes only `analyzer/out/graph.json` and does not overwrite the extension's bundled `extension/public/graph.json`. Load the file from the extension's welcome page (step 3). Without `--no-copy` the graph is also copied into `extension/public/graph.json`, which is what the demo build bundles.

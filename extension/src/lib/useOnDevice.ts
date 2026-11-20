@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { checkOnDevice, downloadOnDeviceModel, type OnDeviceState } from "../lib/onDevice";
+import { checkOnDevice, downloadOnDeviceModel, type OnDeviceState } from "./onDevice";
 
 /** On-device model status for the status pill, plus the user-triggered download. */
 export function useOnDevice() {

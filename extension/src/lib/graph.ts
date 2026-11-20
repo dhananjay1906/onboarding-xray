@@ -1,4 +1,7 @@
-// Load and query the bundled graph.json (produced by `npm run analyze` at the repo root).
+// Load and query graph.json (produced by `npm run analyze` at the repo root): the bundled demo graph,
+// or one the user loaded from their own project.
+import { readCustomGraph } from "./customGraph";
+import { validateGraph } from "./graphValidate";
 
 export interface GraphNode {
   id: string;
@@ -68,6 +71,23 @@ export async function loadGraph(): Promise<Graph> {
   const graph = (await res.json()) as Graph;
   if (graph.schema_version !== 1) throw new Error(`Unsupported graph schema ${graph.schema_version}`);
   return graph;
+}
+
+export interface ActiveGraph {
+  graph: Graph;
+  /** Set when the user loaded their own graph.json from the welcome page. */
+  custom: { name: string; savedAt: number } | null;
+}
+
+/** The user's own graph.json if they loaded one (and it is still valid), otherwise the bundled demo graph. */
+export async function loadActiveGraph(): Promise<ActiveGraph> {
+  try {
+    const stored = await readCustomGraph();
+    if (stored) return { graph: validateGraph(stored.graph), custom: { name: stored.name, savedAt: stored.savedAt } };
+  } catch {
+    /* unreadable or invalid stored graph: fall back to the bundled one */
+  }
+  return { graph: await loadGraph(), custom: null };
 }
 
 export function listComponents(graph: Graph): GraphComponent[] {

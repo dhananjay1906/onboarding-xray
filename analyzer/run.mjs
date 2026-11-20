@@ -11,12 +11,14 @@ const outDir = path.join(analyzerDir, "out");
 
 let backend = path.join(repoRoot, "demo-app", "backend");
 let frontend = path.join(repoRoot, "demo-app", "frontend");
+let copy = true; // copy graph.json into the extension (--no-copy keeps the bundled demo graph untouched)
 const args = process.argv.slice(2);
 for (let i = 0; i < args.length; i++) {
   if (args[i] === "--backend") backend = path.resolve(args[++i]);
   else if (args[i] === "--frontend") frontend = path.resolve(args[++i]);
+  else if (args[i] === "--no-copy") copy = false;
   else {
-    console.error(`unknown argument: ${args[i]}\nusage: npm run analyze [-- --backend DIR --frontend DIR]`);
+    console.error(`unknown argument: ${args[i]}\nusage: npm run analyze [-- --backend DIR --frontend DIR --no-copy]`);
     process.exit(2);
   }
 }
@@ -61,6 +63,11 @@ if (!fs.existsSync(tsx)) {
 const rel = (p) => path.relative(repoRoot, p) || ".";
 run("1/3 backend analyzer", python, [path.join(analyzerDir, "backend_ast.py"), backend, "--repo-root", repoRoot, "-o", path.join(outDir, "backend.json")]);
 run("2/3 frontend analyzer", process.execPath, [tsx, path.join(analyzerDir, "frontend_calls.ts"), frontend, "--repo-root", repoRoot, "-o", path.join(outDir, "frontend.json")]);
-run("3/3 merge graph + copy to extension", python, [path.join(analyzerDir, "merge_graph.py")]);
+run(copy ? "3/3 merge graph + copy to extension" : "3/3 merge graph", python, [path.join(analyzerDir, "merge_graph.py"), ...(copy ? [] : ["--copy-to", ""])]);
 
-console.log(`\nDone: ${rel(path.join(repoRoot, "extension", "public", "graph.json"))} updated (backend: ${rel(backend)}, frontend: ${rel(frontend)}).`);
+console.log(
+  copy
+    ? `\nDone: ${rel(path.join(repoRoot, "extension", "public", "graph.json"))} updated (backend: ${rel(backend)}, frontend: ${rel(frontend)}).`
+    : `\nDone: ${rel(path.join(outDir, "graph.json"))} written (backend: ${rel(backend)}, frontend: ${rel(frontend)}). ` +
+        "The extension's bundled graph was not changed; load this file from the welcome page.",
+);

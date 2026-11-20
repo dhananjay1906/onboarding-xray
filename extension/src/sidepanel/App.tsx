@@ -1,12 +1,14 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { SELECT_MESSAGE, type SelectMessage } from "../lib/messages";
+import { clearCustomGraph, onGraphChanged } from "../lib/customGraph";
 import {
   chainsFor,
   findComponentBySource,
   listComponents,
-  loadGraph,
+  loadActiveGraph,
   type Graph,
 } from "../lib/graph";
+import { openTour } from "../lib/links";
 import { readStoredMode, storeMode, type PrivacyMode } from "../lib/modes";
 import { loadSettings } from "../lib/settings";
 import ChainDiagram from "./components/ChainDiagram";
@@ -16,8 +18,8 @@ import RepoMap from "./components/RepoMap";
 import StatusBar from "./components/StatusBar";
 import StepList from "./components/StepList";
 import { flowRequest, stepRequest } from "./prompts";
-import { useExplanations } from "./useExplanations";
-import { useOnDevice } from "./useOnDevice";
+import { setSharedCacheAllowed, useExplanations } from "./useExplanations";
+import { useOnDevice } from "../lib/useOnDevice";
 
 type Tab = "xray" | "map";
 
@@ -47,12 +49,25 @@ export default function App() {
   const [nodeId, setNodeId] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 
+  const [custom, setCustom] = useState<{ name: string } | null>(null);
+
   const load = useCallback(() => {
     setError(null);
     setGraph(null);
-    loadGraph().then(setGraph).catch((e: Error) => setError(e.message));
+    setComponentId("");
+    setChainId(null);
+    setNodeId(null);
+    loadActiveGraph()
+      .then(({ graph, custom }) => {
+        setSharedCacheAllowed(!custom); // the user's own code never goes to the shared cache
+        setCustom(custom);
+        setGraph(graph);
+      })
+      .catch((e: Error) => setError(e.message));
   }, []);
   useEffect(load, [load]);
+  // The welcome page can load or clear the user's own graph.json while the panel is open.
+  useEffect(() => onGraphChanged(load), [load]);
 
   const selectComponent = useCallback(
     (id: string) => {
@@ -92,7 +107,18 @@ export default function App() {
   return (
     <div className="mx-auto flex min-h-screen max-w-2xl flex-col">
       <header className="bg-white px-4 pt-3">
-        <h1 className="mb-2 text-base font-semibold">Onboarding X-Ray</h1>
+        <div className="mb-2 flex items-center justify-between">
+          <h1 className="text-base font-semibold">Onboarding X-Ray</h1>
+          <button
+            type="button"
+            onClick={openTour}
+            aria-label="Replay the tour"
+            title="Replay the tour"
+            className="flex h-6 w-6 items-center justify-center rounded-full border border-slate-300 text-xs font-semibold text-slate-600 hover:bg-slate-100"
+          >
+            ?
+          </button>
+        </div>
         <StatusBar
           mode={mode}
           onModeChange={setMode}
@@ -156,6 +182,17 @@ export default function App() {
 
         {graph && components.length > 0 && (
           <ErrorBoundary onReset={() => selectComponent("")}>
+            {custom && (
+              <div className="flex items-center justify-between gap-2 rounded bg-indigo-50 p-2 text-xs text-indigo-900" data-testid="custom-graph-banner">
+                <span>
+                  Showing your graph: <strong>{custom.name}</strong>. Your code is not added to the shared cache.
+                </span>
+                <button type="button" onClick={() => void clearCustomGraph().then(load)} className="whitespace-nowrap font-semibold underline">
+                  Use demo graph
+                </button>
+              </div>
+            )}
+
             {notice && (
               <div role="status" className="flex items-start justify-between gap-2 rounded bg-amber-50 p-2 text-xs text-amber-800">
                 <span>{notice}</span>

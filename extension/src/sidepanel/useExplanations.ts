@@ -12,8 +12,14 @@ export type ExplanationState =
   | { status: "done"; result: ExplainResult }
   | { status: "error"; message: string; code: ExplainErrorCode | "UNKNOWN" };
 
-// One explainer for the whole panel. Only the bundled demo graph is ever shown, and its code is public,
-// so the shared Firestore cache is allowed here. Private only mode skips it entirely (see explain.ts).
+// One explainer for the whole panel. The bundled demo graph is public code, so its explanations may use the
+// shared Firestore cache. A graph the user loaded from their own project is private: it never does
+// (setSharedCacheAllowed(false)). Private only mode skips the shared cache entirely (see explain.ts).
+let sharedCacheAllowed = true;
+export const setSharedCacheAllowed = (allowed: boolean) => {
+  sharedCacheAllowed = allowed;
+};
+
 const memory = new Map<string, CachedExplanation>();
 const explainer = createExplainer({
   settings: getSettings,
@@ -21,6 +27,7 @@ const explainer = createExplainer({
   generate,
   memory,
   remote: firestoreCache,
+  canShare: () => sharedCacheAllowed,
 });
 
 /** Explanation state per key ("step:<nodeId>" or "flow:<chainId>"). Requests only start from a click. */
