@@ -4,6 +4,7 @@
   "version": "0.1.0",
   "license": "Apache-2.0",
   "scripts": {
-    "analyze": "node analyzer/run.mjs"
+    "analyze": "node analyzer/run.mjs",
+    "package:submission": "npm --prefix extension run package:submission"
   }
 }

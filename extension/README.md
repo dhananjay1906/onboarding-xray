@@ -92,3 +92,63 @@ firebase deploy --only firestore:rules
 cd extension
 npm test
 ```
+
+## Submission build (zip for the Web Store and judges)
+
+`npm run package:submission` (from the repo root, or `npm run package:submission` inside `extension/`) builds a zip you can upload. It differs from the other builds like this:
+
+| | `npm run build` | `npm run build:dev` | **`package:submission`** |
+|---|---|---|---|
+| App Check provider | reCAPTCHA Enterprise | reCAPTCHA Enterprise + debug token | **Debug token only** |
+| Debug token | none | generated in the browser | **injected at build time from `XRAY_APPCHECK_DEBUG_TOKEN`** |
+| reCAPTCHA code and site key in the bundle | yes | yes | **no** |
+| Remote script URLs / eval / `new Function` | n/a | n/a | **none, verified by `scripts/check-mv3.mjs`** |
+
+The build **fails** if `XRAY_APPCHECK_DEBUG_TOKEN` is missing or malformed. After building, `scripts/check-mv3.mjs --submission` parses every script and fails the build if it finds `eval`, `new Function`, `importScripts`, script injection, a remote script URL, a reCAPTCHA provider, a loosened content security policy, a missing manifest file, or the debug token anywhere except the JS bundle. It also fails if the injected token is not actually in the bundle. Then `scripts/make-zip.mjs` writes `extension/release/onboarding-xray-submission-v<version>.zip` (manifest at the zip root, no source maps, reproducible) and prints its SHA-256. `extension/release/` and `*.zip` are git-ignored.
+
+### 1. Create a separate "judges" debug token
+
+Use a **new token only for judges**. Do not reuse your own development token (`my-laptop`): it stays valid for your machine and must not be in a zip.
+
+Either with the CLI (it generates the token and prints it once; copy it):
+
+```
+firebase appcheck:debugtokens:create --project onboarding-xray --app 1:69691650784:web:aaa7374f1253cb8a5ed685 --display-name "judges-2026" --no-save-local
+```
+
+or in the console: generate a UUID (`node -e "console.log(crypto.randomUUID())"`), then **Build, App Check, Apps, xray-extension, three-dot menu, Manage debug tokens, Add debug token**, paste it, name it `judges-2026`, **Save**.
+
+### 2. Build the zip
+
+The token must be in the environment of the build, never in a committed file.
+
+```
+# bash
+XRAY_APPCHECK_DEBUG_TOKEN=<judges-token> npm run package:submission
+
+# PowerShell
+$env:XRAY_APPCHECK_DEBUG_TOKEN = "<judges-token>"; npm run package:submission
+```
+
+Or add `XRAY_APPCHECK_DEBUG_TOKEN=<judges-token>` to the git-ignored root `.env` (it is not a `VITE_` variable, so dev builds never read it).
+
+### 3. Test the zip before uploading
+
+Unzip it, open `chrome://extensions`, **Load unpacked**, pick the unzipped folder, open the side panel, pick Checkout, switch to **Best quality**, and click **Explain this step**. You should get a **Cloud** answer. If you get "the cloud service rejected this build's access token", the token is not registered (or was revoked).
+
+### 4. Revoke the token after judging
+
+```
+firebase appcheck:debugtokens:list --project onboarding-xray --app 1:69691650784:web:aaa7374f1253cb8a5ed685
+firebase appcheck:debugtokens:delete <debugTokenId> --project onboarding-xray --app 1:69691650784:web:aaa7374f1253cb8a5ed685 --force
+```
+
+Use the **debugTokenId** from the `judges-2026` row (the long id at the end of its resource name), not your own token's. Or in the console: **App Check, Apps, xray-extension, Manage debug tokens**, delete the `judges-2026` row. After that the cloud explanations in the submitted build stop working (Private only mode, with the on-device model, still works). Do this as soon as judging ends, and immediately if you think the token leaked.
+
+### Know the risks
+
+- **The token is inside the zip.** Anyone who downloads the extension can read it. Treat it as public until you revoke it.
+- **What it allows.** It lets a caller pass App Check for your project, so they can use Firebase AI Logic on your Gemini quota until it is revoked. Keep the judging window short, set a budget alert or quota in Google Cloud, and watch usage.
+- **Distribution.** Prefer an unlisted or private Web Store listing, or a GitHub release only for the judging period.
+- **Never put the token in the README, the demo video, the Devpost text or a commit.** The panel's console prints it (`Firebase App Check debug token: ...`) when it opens, so do not film the console.
+- The submission manifest's content script runs on `localhost:5173` and on `https://onboarding-xray.web.app` and `https://onboarding-xray.firebaseapp.com` (the default Firebase Hosting URLs for the hosted demo). It requests no other site access.

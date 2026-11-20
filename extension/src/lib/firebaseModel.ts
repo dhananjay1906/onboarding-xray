@@ -34,6 +34,12 @@ export async function generate(call: ModelCall): Promise<{ text: string; source:
   } catch (e) {
     const message = (e as Error).message ?? String(e);
     if (/app ?check/i.test(message)) {
+      if (import.meta.env.MODE === "submission") {
+        throw new Error(
+          "The cloud service rejected this build's access token (it may have expired or been revoked). " +
+            "Private only mode still works if your Chrome has the on-device model.",
+        );
+      }
       throw new Error(
         "Firebase rejected the request because the App Check token is not valid. In development, copy the " +
           '"Firebase App Check debug token" from this panel\'s console and add it in the Firebase console: ' +

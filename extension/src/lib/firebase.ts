@@ -2,22 +2,29 @@
 // (AI Logic lives in firebaseModel.ts, Remote Config in settings.ts.)
 import { appCheckDebug } from "./appCheckDebug"; // keep first: sets the debug flag before the SDK loads
 import { initializeApp, type FirebaseApp } from "firebase/app";
-import { initializeAppCheck, ReCaptchaEnterpriseProvider, type AppCheck } from "firebase/app-check";
+import {
+  CustomProvider,
+  initializeAppCheck,
+  ReCaptchaEnterpriseProvider,
+  type AppCheck,
+} from "firebase/app-check";
 import { indexedDBLocalPersistence, initializeAuth, signInAnonymously, type Auth } from "firebase/auth/web-extension";
 import { getFirestore, type Firestore } from "firebase/firestore";
 
-const env = import.meta.env;
-
+// Static `import.meta.env.X` reads only (reading `import.meta.env` as a whole would inline every VITE_ variable).
 const config = {
-  apiKey: env.VITE_FIREBASE_API_KEY,
-  authDomain: env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: env.VITE_FIREBASE_PROJECT_ID,
-  appId: env.VITE_FIREBASE_APP_ID,
-  messagingSenderId: env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  storageBucket: env.VITE_FIREBASE_STORAGE_BUCKET,
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
 };
 
-const siteKey: string | undefined = env.VITE_RECAPTCHA_ENTERPRISE_SITE_KEY;
+// The submission build uses the App Check debug provider only: no reCAPTCHA site key and no reCAPTCHA code
+// (this ternary and the `if` in getFirebase() fold at build time, so the bundler drops the reCAPTCHA provider).
+const siteKey: string | undefined =
+  import.meta.env.MODE === "submission" ? undefined : import.meta.env.VITE_RECAPTCHA_ENTERPRISE_SITE_KEY;
 
 export interface Firebase {
   app: FirebaseApp;
@@ -55,17 +62,23 @@ export function getFirebase(): Firebase {
 
   const missing = [
     ...Object.entries(config).filter(([, v]) => !v).map(([k]) => `VITE_FIREBASE_${k.replace(/[A-Z]/g, (c) => "_" + c).toUpperCase()}`),
-    ...(siteKey ? [] : ["VITE_RECAPTCHA_ENTERPRISE_SITE_KEY"]),
+    ...(import.meta.env.MODE === "submission" || siteKey ? [] : ["VITE_RECAPTCHA_ENTERPRISE_SITE_KEY"]),
   ];
   if (missing.length) {
     throw new Error(`Missing in .env: ${missing.join(", ")}. Copy .env.example to .env and fill the values, then rebuild.`);
   }
 
   const app = initializeApp(config);
-  const appCheck = initializeAppCheck(app, {
-    provider: new ReCaptchaEnterpriseProvider(siteKey!),
-    isTokenAutoRefreshEnabled: true,
-  });
+  let provider: CustomProvider | ReCaptchaEnterpriseProvider;
+  if (import.meta.env.MODE === "submission") {
+    // In debug mode the SDK exchanges the injected debug token itself and never calls this provider.
+    provider = new CustomProvider({
+      getToken: () => Promise.reject(new Error("Submission build: App Check uses the injected debug token only.")),
+    });
+  } else {
+    provider = new ReCaptchaEnterpriseProvider(siteKey!);
+  }
+  const appCheck = initializeAppCheck(app, { provider, isTokenAutoRefreshEnabled: true });
   instance = { app, appCheck, appCheckDebug };
   return instance;
 }

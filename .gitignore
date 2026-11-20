@@ -238,3 +238,6 @@ analyzer/out/
 !extension/public/graph.json
 # The Python "lib/" rule above would otherwise hide the extension source in src/lib.
 !extension/src/lib/
+
+# Submission zips contain the judges debug token: never commit them.
+extension/release/

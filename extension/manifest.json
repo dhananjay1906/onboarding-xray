@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "description": "Alt+click any element in a running app to see the code chain behind it: component, API call, route, functions, database table.",
   "minimum_chrome_version": "114",
-  "permissions": ["sidePanel", "storage"],
+  "permissions": ["sidePanel"],
   "icons": {
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",
@@ -27,7 +27,12 @@
   },
   "content_scripts": [
     {
-      "matches": ["http://localhost:5173/*", "http://127.0.0.1:5173/*"],
+      "matches": [
+        "http://localhost:5173/*",
+        "http://127.0.0.1:5173/*",
+        "https://onboarding-xray.web.app/*",
+        "https://onboarding-xray.firebaseapp.com/*"
+      ],
       "js": ["content.js"],
       "run_at": "document_idle"
     }
