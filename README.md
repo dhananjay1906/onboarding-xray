@@ -10,7 +10,13 @@ You need Google Chrome. The extension is not in the Chrome Web Store; you instal
 2. **Unzip.** Right-click the zip and choose **Extract All** (macOS: double-click it). Keep the extracted folder: Chrome loads the extension from it, so do not delete it. `manifest.json` must be directly inside that folder.
 3. **Open the extensions page.** Type `chrome://extensions` in the address bar and press Enter.
 4. **Turn on Developer mode.** Use the toggle in the top-right corner.
+
+   ![Developer mode toggle](docs/screenshots/install/developer-mode.png)
+
 5. **Load the extension.** Click **Load unpacked** (top left) and select the folder from step 2.
+
+   ![Load unpacked button](docs/screenshots/install/load-unpacked.png)
+
 6. **Take the tour.** The welcome page opens by itself. Follow step 2 there: it opens the live demo store and asks you to Alt+click **Place order** on the checkout page.
 
 ![The welcome tour that opens after install](docs/screenshots/install/welcome-tour.jpg)
