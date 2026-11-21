@@ -1,4 +1,4 @@
-// Packs dist/ into a Web Store-ready zip (manifest.json at the zip root).
+// Packs dist/ into a release zip for GitHub Releases (manifest.json at the zip root).
 // Usage (from extension/): node scripts/make-zip.mjs   -> release/onboarding-xray-submission-v<version>.zip
 import { zipSync } from "fflate";
 import { createHash } from "node:crypto";

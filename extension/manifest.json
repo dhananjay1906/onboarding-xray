@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Onboarding X-Ray",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Alt+click any element in a running app to see the code chain behind it: component, API call, route, functions, database table.",
   "minimum_chrome_version": "114",
   "permissions": ["sidePanel", "scripting"],

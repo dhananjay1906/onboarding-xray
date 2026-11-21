@@ -93,9 +93,9 @@ cd extension
 npm test
 ```
 
-## Submission build (zip for the Web Store and judges)
+## Submission build (zip for the GitHub Release and judges)
 
-`npm run package:submission` (from the repo root, or `npm run package:submission` inside `extension/`) builds a zip you can upload. It differs from the other builds like this:
+`npm run package:submission` (from the repo root, or `npm run package:submission` inside `extension/`) builds the zip you attach to the GitHub Release. It differs from the other builds like this:
 
 | | `npm run build` | `npm run build:dev` | **`package:submission`** |
 |---|---|---|---|
@@ -149,7 +149,7 @@ Use the **debugTokenId** from the `judges-2026` row (the long id at the end of i
 
 - **The token is inside the zip.** Anyone who downloads the extension can read it. Treat it as public until you revoke it.
 - **What it allows.** It lets a caller pass App Check for your project, so they can use Firebase AI Logic on your Gemini quota until it is revoked. Keep the judging window short, set a budget alert or quota in Google Cloud, and watch usage.
-- **Distribution.** Prefer an unlisted or private Web Store listing, or a GitHub release only for the judging period.
+- **Distribution.** The zip goes on a GitHub Release (users install it with Load unpacked). Delete the release, or revoke the token, when judging ends.
 - **Never put the token in the README, the demo video, the Devpost text or a commit.** The panel's console prints it (`Firebase App Check debug token: ...`) when it opens, so do not film the console.
 - The submission manifest's content script runs on `localhost:5173` and on `https://onboarding-xray.web.app` and `https://onboarding-xray.firebaseapp.com` (the default Firebase Hosting URLs for the hosted demo). It requests no other site access.
 
