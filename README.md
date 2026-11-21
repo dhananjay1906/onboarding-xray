@@ -117,6 +117,15 @@ There are tests for the analyzers, the demo backend and the extension (`npm test
  
 React, Vite, TypeScript, Tailwind and React Flow for the extension. Firebase AI Logic with Gemini Nano in Chrome and the Gemini Developer API. Firestore, App Check, Anonymous Auth, Remote Config and Hosting. Python's `ast` module and Babel for the analyzers. FastAPI, SQLModel and SQLite for the demo store, which is hosted on Firebase Hosting and Render.
  
+## AI tools used
+
+This project was built with help from AI coding assistants, as the hackathon rules allow:
+
+- **Claude Code** (Anthropic): code generation, refactoring, tests and debugging, directed and reviewed by me.
+- **Claude** (Anthropic): planning, research and documentation.
+
+The product itself uses Firebase AI Logic (Gemini Nano on-device and the Gemini Developer API in the cloud), described above.
+
 ## License
  
 Apache 2.0, see [LICENSE](LICENSE).
