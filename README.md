@@ -2,7 +2,7 @@
  
 Hold Alt, click a button in a web app, and X-Ray shows you every piece of code that runs because of that click: the React component, the API call, the FastAPI route, the Python functions behind it and the database tables it touches. Each step comes with a short explanation in plain English, written on your own laptop by Gemini Nano whenever it can be.
  
-**Try it:** [live demo store](https://onboarding-xray.web.app) · [download the extension](https://github.com/dhananjay1906/onboarding-xray/releases/latest) · [watch the demo](YOUTUBE_LINK_HERE)
+**Try it:** [live demo store](https://onboarding-xray.web.app) · [download the extension](https://github.com/dhananjay1906/onboarding-xray/releases/latest)
  
 ![X-Ray tracing the Place order button](docs/screenshots/polish/after-3-explanation-done-dark.png)
  
@@ -121,8 +121,7 @@ React, Vite, TypeScript, Tailwind and React Flow for the extension. Firebase AI 
 
 This project was built with help from AI coding assistants, as the hackathon rules allow:
 
-- **Claude Code** (Anthropic): code generation, refactoring, tests and debugging, directed and reviewed by me.
-- **Claude** (Anthropic): planning, research and documentation.
+- **Claude Code** (Anthropic): code generation, refactoring.
 
 The product itself uses Firebase AI Logic (Gemini Nano on-device and the Gemini Developer API in the cloud), described above.
 
