@@ -1,166 +1,123 @@
 # Onboarding X-Ray
  
-**Alt+click any element in a running web app and see every piece of code behind it, explained in plain English, on-device when possible.**
+Hold Alt, click a button in a web app, and X-Ray shows you every piece of code that runs because of that click: the React component, the API call, the FastAPI route, the Python functions behind it and the database tables it touches. Each step comes with a short explanation in plain English, written on your own laptop by Gemini Nano whenever it can be.
  
-React component → API call → FastAPI route → Python functions → database table
+**Try it:** [live demo store](https://onboarding-xray.web.app) · [download the extension](https://github.com/dhananjay1906/onboarding-xray/releases/latest) · [watch the demo](YOUTUBE_LINK_HERE)
  
-[Live demo store](https://onboarding-xray.web.app) · [Download the extension](https://github.com/dhananjay1906/onboarding-xray/releases/latest) · [Demo video](YOUTUBE_LINK_HERE)
+![X-Ray tracing the Place order button](docs/screenshots/polish/after-3-explanation-done-dark.png)
  
-![X-Ray side panel tracing the Place order button](docs/screenshots/polish/after-3-explanation-done-dark.png)
+## Why I built this
  
----
+Every time I've joined a new codebase, the first few weeks go the same way. I see a button, I want to know what it does, and the answer is spread over five files in two languages. I end up grepping for route names, reading through service classes, and eventually asking someone senior to walk me through it.
  
-## Install in 60 seconds
+There are tools for pieces of this. Some jump from a React element to its source file, and some draw a diagram of your backend. But nothing I found starts from the thing you're actually looking at, the running app, and follows the click all the way down to the database.
  
-You need Google Chrome. The extension is not in the Chrome Web Store; you install it from a GitHub Release.
+The other problem is privacy. The quick fix today is to paste company code into a chatbot, and a lot of teams simply aren't allowed to do that. So X-Ray tries to keep the code on the developer's machine and only goes to the cloud when it has to.
  
-1. **Download.** Open the [latest release](https://github.com/dhananjay1906/onboarding-xray/releases/latest) and, under **Assets**, click `onboarding-xray-submission-v1.0.0.zip`.
-2. **Unzip.** Right-click the zip and choose **Extract All** (macOS: double-click it). Keep the extracted folder: Chrome loads the extension from it, so do not delete it. `manifest.json` must be directly inside that folder.
-3. **Open the extensions page.** Type `chrome://extensions` in the address bar and press Enter.
-4. **Turn on Developer mode.** Use the toggle in the top-right corner.
+## Installing it
+ 
+It isn't on the Chrome Web Store, so you load it yourself. It takes about a minute.
+ 
+1. Grab `onboarding-xray-submission-v1.0.0.zip` from the [latest release](https://github.com/dhananjay1906/onboarding-xray/releases/latest).
+2. Unzip it and keep the folder somewhere permanent. Chrome runs the extension from that folder, so don't delete it afterwards. You should see `manifest.json` directly inside it.
+3. Open `chrome://extensions` and switch on **Developer mode** in the top-right corner.
    ![Developer mode toggle](docs/screenshots/install/developer-mode.png)
-5. **Load the extension.** Click **Load unpacked** (top left) and select the folder from step 2.
+4. Click **Load unpacked** and pick the unzipped folder.
    ![Load unpacked button](docs/screenshots/install/load-unpacked.png)
-6. **Take the tour.** The welcome page opens by itself. Follow step 2 there: it opens the live demo store and asks you to Alt+click **Place order** on the checkout page.
-![The welcome tour that opens after install](docs/screenshots/install/welcome-tour.jpg)
+5. A welcome tour opens. It checks your setup, then sends you to the demo store and asks you to Alt+click **Place order** on the checkout page. That's the best first click, because it travels through every layer.
+![The welcome tour](docs/screenshots/install/welcome-tour.jpg)
  
-If the welcome page does not open, click the puzzle-piece icon in the Chrome toolbar, pin **Onboarding X-Ray**, and click its icon to open the side panel (the **?** button there replays the tour).
+If the tour doesn't open, pin X-Ray from the puzzle-piece menu and click its icon. The **?** button in the side panel brings the tour back.
  
-**Live demo:** https://onboarding-xray.web.app (the backend sleeps when idle, so the first load can take about a minute).
+A couple of things worth knowing:
+- The demo store's backend is on a free host that goes to sleep, so the first page load after a quiet period can take close to a minute.
+- Cloud explanations work straight away. On-device ones need Chrome 139 or newer on a machine that can run Gemini Nano. Step 1 of the tour checks this for you and can start the model download.
+- To update, unzip the new release over the old folder and hit the refresh icon on the extension's card.
+## Where the AI runs
  
-**On-device model (optional).** Explanations work in the cloud out of the box. For fully private, on-device explanations you need Chrome 139+ on a supported device; step 1 of the tour checks this and shows what to enable.
+Most of the interesting decisions in this project are about where each explanation gets written. There's a three-way switch at the top of the side panel:
  
-**Updating.** Download the new zip, unzip it over the old folder (or into a new one), then click the refresh icon on the extension's card at `chrome://extensions`. If you used a new folder, remove the old extension and load the new folder.
+- **Private only** uses Firebase AI Logic in `ONLY_ON_DEVICE` mode. Gemini Nano does all the work inside Chrome, and nothing leaves the machine. If the model isn't ready yet, X-Ray tells you so instead of quietly falling back.
+- **Auto**, the default, uses `PREFER_ON_DEVICE`. Explanations of single steps are short enough for Nano, so in practice they stay local. Anything too long for the on-device model goes to Gemini in the cloud.
+- **Best quality** uses `PREFER_IN_CLOUD`, for when you'd rather have the bigger model.
+Every explanation carries a small badge saying where it came from: green for on-device, blue for cloud. The cloud badge also says why, for example "too long for on-device" or "model not downloaded". I wanted that to be visible rather than buried in a log, because if you're trusting a tool with your company's code you should be able to see what it's doing with it.
  
----
+The "Summarize whole flow" button is the one place where cloud is the expected outcome. It sends the entire chain at once, which is more than Nano can take, so it escalates.
  
-## The problem
+All the Firebase AI Logic code is in two files:
+- [`extension/src/lib/explain.ts`](extension/src/lib/explain.ts) builds the prompts, creates the model with the chosen inference mode, starts the on-device model download, and works out which engine actually answered.
+- [`extension/src/lib/firebase.ts`](extension/src/lib/firebase.ts) sets up the Firebase app, App Check, anonymous sign-in, Firestore and Remote Config.
+### The rest of Firebase
  
-A new developer on a team spends their first weeks asking one question over and over: *"When I click this button, what code actually runs?"* The answer is spread across a React component, an API client, a backend route, a service layer and database models. Existing tools answer only part of it:
+App Check is required for AI Logic. Getting it to work in an extension was the most annoying part of the project: reCAPTCHA can't load inside a Manifest V3 extension, so X-Ray uses the App Check debug provider. The release build has a judging token baked in at build time, and it will be revoked after judging.
  
-- Click-to-source tools (LocatorJS, click-to-component) jump to **one frontend file**.
-- Backend visualizers (Archy, fastapi-voyager) map the **backend only**, starting from code, not from the running app.
-- Asking a cloud chatbot means **pasting private company code** into a third-party service.
-## The solution
+Firestore holds a shared cache of explanations, so a team doesn't pay to regenerate the same answer twice. Each entry is keyed on a hash of the prompt version, the mode, the layer and the code itself. If you load your own project's graph, those explanations stay out of the shared cache, since that code is yours. Anonymous Auth gives every install an identity for the Firestore rules without making anyone sign in.
  
-Onboarding X-Ray starts from the **live UI**. Alt+click a button and the side panel shows:
+Remote Config holds the numbers I kept wanting to tweak: the character limit for on-device prompts, the prompt version, the default mode and which cloud model to use. Firebase Hosting serves the demo store.
  
-- **A flow diagram** of the full chain, one node per layer, across frontend and backend.
-- **The real code** for every step, with file and line numbers.
-- **A plain-English explanation** of each step and why it exists.
-- **A badge on every explanation** showing where it was generated: 🔒 *On-device · private* or ☁️ *Cloud* (with the reason).
-**Who it helps:** new hires, bootcamp grads joining their first team, open-source contributors, and the senior engineers who would otherwise spend hours walking them through the codebase.
+### Keeping the explanations honest
  
-## Hybrid AI with Firebase AI Logic
+The model never decides what calls what. The chain of component to endpoint to function to table comes from static analysis of the source code. The model only gets one real snippet at a time and is asked to explain that snippet and why it exists. The code sits right next to the explanation in the panel, so if the model says something odd you can see it immediately.
  
-The core idea: **private code should stay on the developer's laptop whenever possible.**
+## How it fits together
  
-| Mode (privacy toggle) | Inference mode | Behavior |
-| --- | --- | --- |
-| **Private only** | `InferenceMode.ONLY_ON_DEVICE` | Gemini Nano in Chrome only. No request ever leaves the machine. |
-| **Auto** (default) | `InferenceMode.PREFER_ON_DEVICE` | On-device when the model is ready and the prompt fits; cloud otherwise. |
-| **Best quality** | `InferenceMode.PREFER_IN_CLOUD` | Cloud model first. |
+There are three parts, and no X-Ray server. The extension talks to Firebase directly.
  
-- **Per-step explanations** are short prompts (one code snippet each), which fit Gemini Nano, so they run on-device: private, free, and offline-capable.
-- **"Summarize whole flow"** sends the full chain, which exceeds the on-device limit, so it goes to the cloud. The badge says *Cloud · too long for on-device*.
-- If the model isn't downloaded yet, everything keeps working in the cloud while the tour's **Download on-device model** button fetches it.
-**Where it's called in the code:**
-- [`extension/src/lib/firebase.ts`](extension/src/lib/firebase.ts): Firebase app, App Check, Anonymous Auth, Firestore, Remote Config.
-- [`extension/src/lib/explain.ts`](extension/src/lib/explain.ts): `getAI`, `getGenerativeModel(ai, { mode })`, on-device model initialization, and on-device/cloud source detection.
-### Other Firebase products
+**The analyzers** run once against a project. [`analyzer/backend_ast.py`](analyzer/backend_ast.py) walks the Python code with the standard `ast` module, finds FastAPI routes (including routers with prefixes), follows each handler's calls two levels down and notes which SQLModel tables get read or written. [`analyzer/frontend_calls.ts`](analyzer/frontend_calls.ts) parses the React code with Babel and finds the `fetch` and `axios` calls each component makes. [`analyzer/merge_graph.py`](analyzer/merge_graph.py) matches the two up by HTTP method and path, and writes a `graph.json` with the code snippets included.
  
-| Product | How it's used |
-| --- | --- |
-| **App Check** | Required by Firebase AI Logic. The extension uses the App Check debug provider (reCAPTCHA can't run inside a Manifest V3 extension). |
-| **Firestore** | Shared explanation cache, so a team doesn't regenerate the same answer. Keyed by a hash of prompt version, mode tier, layer and code. Graphs you load from your own project are never written to the shared cache. |
-| **Anonymous Auth** | Gives each install an identity for Firestore rules, with no sign-in screen. |
-| **Remote Config** | `on_device_max_chars`, `prompt_version`, `default_mode`, `cloud_model`: tune the on-device/cloud split without shipping a new build. |
-| **Hosting** | Serves the live demo store at https://onboarding-xray.web.app. |
+**The demo store** is a small React + FastAPI shop with products, a cart, checkout and order history. Its Vite config includes a plugin that stamps every element with a `data-source="file:line"` attribute, which is how a click knows where it came from.
  
-### How hallucination is limited
+**The extension** has a content script that draws the highlight while you hold Alt and reports the click, a side panel that looks up the chain and draws it with React Flow, and the welcome tour.
  
-- The model only ever explains **code it is given**: each prompt contains the exact snippet for that step plus its role in the chain.
-- The chain itself (which component calls which endpoint, which function touches which table) comes from **static analysis**, not from the model. The AI writes the words; it never decides the structure.
-- Every explanation sits next to the real code, so it can be checked at a glance.
-## How it works
+To regenerate the demo graph after changing the store:
  
-![Architecture](docs/architecture.png)
+```
+npm run analyze
+```
  
-1. **Analyzers (run once).** [`analyzer/backend_ast.py`](analyzer/backend_ast.py) uses Python's `ast` module to find FastAPI routes, follow calls two levels deep, and detect SQLModel tables. [`analyzer/frontend_calls.ts`](analyzer/frontend_calls.ts) uses Babel to find `fetch`/`axios` calls per React component. [`analyzer/merge_graph.py`](analyzer/merge_graph.py) joins them into `graph.json`, with code snippets embedded.
-2. **Source tagging.** A Vite plugin adds `data-source="file:line"` to every JSX element, so a click knows which component it hit.
-3. **Click overlay.** The extension's content script highlights elements while Alt is held; Alt+click sends the source location to the side panel.
-4. **Side panel.** Looks up the chain in `graph.json`, draws it with React Flow, shows the code, and calls Firebase AI Logic for explanations.
-There is **no X-Ray backend server**: the extension calls Firebase AI Logic directly from the browser.
+## Using it on your own code
  
-## Use it on your own project
+X-Ray needs your source, so it won't work on arbitrary websites. A site never sends its backend code to your browser, so there's nothing to trace. On your own project:
  
-X-Ray explains **your** code, so it needs your source. It can't trace arbitrary websites, because a website never ships its backend code to the browser.
- 
-1. Run the analyzer:
+1. Run the analyzer against it:
 ```
 npm run analyze -- --backend path/to/backend --frontend path/to/frontend --no-copy
 ```
-2. Add the tagging plugin to your app's Vite config (see [`demo-app/frontend`](demo-app/frontend) for the example).
-3. In the welcome tour, step 3: load your `graph.json` and click **Enable on this site** for your app's address. Chrome asks permission for that one site only.
-**Supported today:** React + Vite frontends, FastAPI backends with SQLModel/SQLAlchemy, API calls via `fetch`/`axios` or a small wrapper.
-**Future work:** Next.js, Django, Express and Spring analyzers; TypeScript backends; deeper call-graph tracing.
+2. Add the tagging plugin to your app's Vite config. The demo store's config in [`demo-app/frontend`](demo-app/frontend) shows how.
+3. In step 3 of the welcome tour, load the `graph.json` you just made and click **Enable on this site**. Chrome asks permission for that one address and nothing else.
+Right now this only understands React + Vite on the frontend and FastAPI with SQLModel or SQLAlchemy on the backend. I'd like to add Next.js, Django and Express next, but that's not done.
  
-## Tech stack
+## Running it locally
  
-| Area | Tools |
-| --- | --- |
-| Extension | Chrome Manifest V3, Vite, TypeScript, React, Tailwind CSS, React Flow |
-| AI | Firebase AI Logic (hybrid inference), Gemini Nano in Chrome (on-device), Gemini Developer API (cloud) |
-| Firebase | App Check, Firestore, Anonymous Auth, Remote Config, Hosting |
-| Analyzers | Python `ast`, Node + `@babel/parser` |
-| Demo app | React + Vite, FastAPI, SQLModel, SQLite; hosted on Firebase Hosting + Render |
- 
-## Developer setup
- 
-Requirements: Python 3.11+, Node.js 20+, Chrome 139+, a Firebase project with AI Logic (Gemini Developer API), App Check, Firestore and Anonymous Auth enabled.
+You'll need Python 3.11+, Node 20+, Chrome 139+, and a Firebase project with AI Logic (Gemini Developer API), App Check, Firestore and Anonymous Auth turned on.
  
 ```bash
-# 1. Python environment
 python -m venv .venv
-# Windows: .venv\Scripts\Activate.ps1   macOS/Linux: source .venv/bin/activate
+# Windows: .venv\Scripts\Activate.ps1
+# macOS/Linux: source .venv/bin/activate
  
-# 2. Demo app (two terminals) — see demo-app/README.md
+# demo store, in two terminals
 pip install -r demo-app/backend/requirements.txt
 cd demo-app/backend && python seed.py && uvicorn main:app --port 8000
 cd demo-app/frontend && npm install && npm run dev
  
-# 3. Analyze the demo app
+# build the graph
 npm run analyze
  
-# 4. Extension
-cp .env.example .env        # fill in VITE_FIREBASE_* values
+# the extension
+cp .env.example .env          # add your VITE_FIREBASE_* values
 cd extension && npm install && npm run build:dev
-# chrome://extensions → Developer mode → Load unpacked → extension/dist
 ```
  
-Register your App Check debug token in the Firebase console (App Check → Apps → ⋮ → Manage debug tokens). Details: [`extension/README.md`](extension/README.md).
+Then load `extension/dist` with **Load unpacked**. The side panel console prints an App Check debug token the first time it runs. Register it under App Check → Apps → ⋮ → Manage debug tokens. [`extension/README.md`](extension/README.md) covers the details, including how to build the release zip.
  
-**Tests:** analyzer tests (`analyzer/`), demo backend tests (`demo-app/backend/`), and extension unit tests (`cd extension && npm test`).
+There are tests for the analyzers, the demo backend and the extension (`npm test` inside `extension/`).
  
-## My contribution
+## Built with
  
-<!-- Write this section yourself — judges read it closely. Suggested points: -->
-- **What I built:** _describe the idea, architecture decisions, and the parts you designed and debugged yourself._
-- **What I learned:** _e.g. Python AST analysis, Chrome MV3 extensions, Firebase AI Logic hybrid inference, App Check in extensions._
-- **Hardest problems:** _e.g. making App Check work inside an MV3 extension, getting the on-device model to download, matching frontend calls to backend routes._
-## AI tools used
+React, Vite, TypeScript, Tailwind and React Flow for the extension. Firebase AI Logic with Gemini Nano in Chrome and the Gemini Developer API. Firestore, App Check, Anonymous Auth, Remote Config and Hosting. Python's `ast` module and Babel for the analyzers. FastAPI, SQLModel and SQLite for the demo store, which is hosted on Firebase Hosting and Render.
  
-This project was built with help from AI coding assistants, as the hackathon rules allow:
-- **Claude Code** (Anthropic): code generation, refactoring, tests and debugging, directed and reviewed by me.
-- **Claude** (Anthropic): planning, research and documentation.
-All design decisions, testing in Chrome and Firebase setup were done by me.
- 
-## Credits
- 
-- [Firebase JS SDK](https://github.com/firebase/firebase-js-sdk) and Firebase AI Logic (Google)
-- Gemini Nano in Chrome and the Gemini Developer API (Google)
-- [React Flow](https://reactflow.dev), [Babel](https://babeljs.io), [FastAPI](https://fastapi.tiangolo.com), [SQLModel](https://sqlmodel.tiangolo.com), [Tailwind CSS](https://tailwindcss.com), [Vite](https://vitejs.dev)
 ## License
  
-[Apache License 2.0](LICENSE)
+Apache 2.0, see [LICENSE](LICENSE).
  
